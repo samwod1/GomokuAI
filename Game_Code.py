@@ -1,36 +1,12 @@
 import sys
 import pygame
 import AI_Code
+from initialise import *
 
 pygame.init()
 
-WIDTH, HEIGHT = 600, 600
-WHITE = (255, 255, 255)
-MARGIN = 5
-
-FONT = pygame.font.Font("assets/Roboto-Regular.ttf", 100)
-
-SCREEN = pygame.display.set_mode((WIDTH, HEIGHT))
-
-BOARD_SIZE = 405
-
-pygame.display.set_caption("Gomoku")
-
-X_IMG = pygame.image.load("assets/black stone.png")
-X_IMG = pygame.transform.scale(X_IMG, (22, 22))
-
-X_WIN = pygame.image.load("assets/stone win.png")
-X_WIN = pygame.transform.scale(X_WIN, (22, 22))
-
-O_IMG = pygame.image.load("assets/white stone.png")
-O_IMG = pygame.transform.scale(O_IMG, (22, 22))
-
-O_WIN = pygame.image.load("assets/stone win.png")
-O_WIN = pygame.transform.scale(O_WIN, (22, 22))
-
-BG_COLOR = (255, 253, 243)
-board_size = 15
-game_finished = False
+def get_board_size():
+    return board_size
 
 
 def grid(SCREEN, size, board_size):
@@ -100,7 +76,7 @@ def add_XO(board, graphical_board, to_move):
     converted_x = round((current_pos[0] - 114) / 27)  # muck about with these values
     converted_y = round((current_pos[1] - 114) / 27)
 
-    if 14 >= converted_y >= 0 and 14 >= converted_x >= 0:
+    if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0:
 
         if board[converted_y][converted_x] != 'O' and board[converted_y][converted_x] != 'X':
             board[converted_y][converted_x] = to_move
@@ -119,7 +95,7 @@ def add_XO(board, graphical_board, to_move):
     return board, to_move
 
 def check_win_2(current_board):
-    dim = len(current_board)
+    dim = board_size
 
     winner_found = False
     while not winner_found:
@@ -272,10 +248,8 @@ def game_loop():
                     game_finished = True
 
                 pygame.display.update()
-
                 if game_finished == False and to_move == "O":
                     board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
-
                     if game_finished:
                         reset_board()
 

@@ -4,20 +4,22 @@ import random
 import time as timer
 
 import pygame
-
 import Game_Code
+import initialise
 
 tree = {}
-board_size = 15
-
+board_size = initialise.board_size
+init_board = initialise.board
 
 def MCTS(state):
     global tree
+    tree.clear()
+    og_state = [init_board, state[1]]
     # store intitial state, storing total number of nodes and times visited
-    tree['[]'] = ['start', 0, 0]  # dict to store node info: parent, t, n
+    tree[str(og_state)] = ['start', 0, 0]  # dict to store node info: parent, t, n
 
     # add first node
-    tree[str(state)] = [state, 0, 0]
+    tree[str(state)] = [og_state, 0, 0]
 
     # set a timeout
     timeout = 20
@@ -28,6 +30,7 @@ def MCTS(state):
         # Expand the tree
         traverse_and_expand(state)
 
+    print("tree: " + str(tree))
     # At end of loop identify successors
     succ = successors(state)
 
@@ -72,7 +75,6 @@ def successors(state):
 
     current_board = state[0]
     res = []
-    i = 0
 
     for i in range(board_size):
         for j in range(board_size):
@@ -173,14 +175,15 @@ def rollout(state):
 def MCR_player(state):
     turn = state[1]
     n = random.randint(1, 6)  # performs n many rollouts
+    print("n: " + str(n))
     rolloutSim = rollout(state)  # first rollout
-    for i in range(n - 1):
+    for i in range(n):
         nextRollout = rollout(state)
-        if rolloutSim[0] > nextRollout[0] and turn == 2:
+        if rolloutSim[0] > nextRollout[0] and turn == 1:
             rolloutSim = nextRollout
-        elif rolloutSim[0] < nextRollout[0] and turn == 1:
+        elif rolloutSim[0] < nextRollout[0] and turn == 0:
             rolloutSim = nextRollout
-
+   # print("rolloutSim" + str(rolloutSim))
     return rolloutSim[0], rolloutSim[1][0]
 
 
@@ -188,7 +191,7 @@ def backpropagate(node, rolloutValue):
     global tree
     current = node
     while tree[str(current)][0] != "start":
-        tree[str(current)] = [tree[str(current)][0],str(int(tree[str(current)][1]) + int(rolloutValue)), str(int(tree[str(current)][2]) + 1)]
+        tree[str(current)] = [tree[str(current)][0], str(int(tree[str(current)][1]) + int(rolloutValue)), str(int(tree[str(current)][2]) + 1)]
         current = tree[str(current)][0]  # current becomes parent node
 
 
@@ -210,14 +213,17 @@ def traverse_and_expand(node):
     global tree
     current = node
     maxUCB = -math1.inf
-
     # while current node isn't a leaf node
     while not isLeaf(current):
         # Generate successors
         succ = successors(current)
+        print("succ")
+        print(succ)
+        print("current: " + str(current))
         for s in succ:
             # Add each successor to the tree dictionary
             tree[str(s)] = [current, 0, 0]  # adding successors to tree
+            #print(tree)
             # Calculate UCB
             UCB = calcUCB(s)
             # If the value for this node is greater, then set it to be the chosen node
@@ -231,11 +237,15 @@ def traverse_and_expand(node):
     # current is a leaf node
     # if the node hasn't been visited, don't expand
     if (tree[str(current)][1] == 0):  # ni value for node is 0
+
         # Use MCR to determine a value
         value = MCR_player(current)[0]  # rollout value
+        print("hi")
 
         # Once we have the value, backpropogate upwards
         backpropagate(current, value)
+        print("goodbye")
+
     # if the node has been visted, expand and add to tree
     else:
         # Recursively runs until a leaf is found
@@ -272,6 +282,7 @@ def add_XO_AI(current_board, current_graphical_board, to_move, X_IMG, O_IMG, SCR
     state = state_conversion(current_board, to_move)
 
     game_state = AI_Player_mcts(state)
+
     current_board = game_state[0]
 
     if game_state[1] == 0:

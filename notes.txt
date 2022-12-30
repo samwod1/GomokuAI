@@ -1,0 +1,12 @@
+when traverse and expand is called it is passed the whole state and which includes
+the whole board and also who's turn it is
+
+30/12/2022 - turns out the timeout clock for the traverse and expand stage was too short to be able
+to even add any nodes to the tree, so when the next stage was looking in the tree it found nothing
+producing a key error.
+
+Now turning my efforts to optimising my program the best i can before testing and evaluating MCTS
+effectiveness on the Gomoku problem, testing it and then implementing RAVE.
+
+given enough time the monte carlo tree search method is making different moves depending on the context
+which is a good sign
