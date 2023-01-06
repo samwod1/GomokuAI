@@ -233,6 +233,7 @@ def game_loop():
     global board, board_size, graphical_board, to_move, game_finished
     while True:
         for event in pygame.event.get():
+            pygame.display.update() #updates display after the program hangs - which is quite often -
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()

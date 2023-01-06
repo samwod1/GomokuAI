@@ -9,4 +9,11 @@ Now turning my efforts to optimising my program the best i can before testing an
 effectiveness on the Gomoku problem, testing it and then implementing RAVE.
 
 given enough time the monte carlo tree search method is making different moves depending on the context
-which is a good sign
+which is a good sign.
+
+02/01/22 - the branching factor is still however too large with this implementation of MCTS, I will have to use the RAVE
+modification to
+
+05/01/223 - turns are are all screwed up so need to figure that out, program isnt updating RAVE values as it cant recognise when actions are found.
+
+Need to clarify what paper means by Children of the nodes RAVE values being updated, how do i know what one is children etc

@@ -11,18 +11,19 @@ tree = {}
 board_size = initialise.board_size
 init_board = initialise.board
 
+
 def MCTS(state):
     global tree
     tree.clear()
     og_state = [init_board, state[1]]
     # store intitial state, storing total number of nodes and times visited
-    tree[str(og_state)] = ['start', 0, 0]  # dict to store node info: parent, t, n
+    tree[str(og_state)] = ['start', 0, 0, 0]  # dict to store node info: parent, t, n, RAVE
 
     # add first node
-    tree[str(state)] = [og_state, 0, 0]
+    tree[str(state)] = [og_state, 0, 0, 0]
 
     # set a timeout
-    timeout = 20
+    timeout = 15
     start = timer.time()
 
     # Run MCTS
@@ -34,13 +35,15 @@ def MCTS(state):
     # At end of loop identify successors
     succ = successors(state)
 
-    # Apply UCB formula to all successors
-    maxUCB = -math1.inf
+    # Apply UCB formula to all successors #TODO change this to RAVE
+    maxRAVE = -math1.inf
     bestNextState = succ[0]
+    print("successors: " + str(succ))
     for s in succ:
-        thisUCB = calcUCB(s)
-        if thisUCB > maxUCB:
-            maxUCB = thisUCB
+        # thisUCB = calcUCB(s)
+        RAVE = int(tree[str(s)][3])
+        if RAVE > maxRAVE:
+            maxRAVE = RAVE
             bestNextState = s
     # Return best state
     return bestNextState
@@ -58,6 +61,31 @@ def calcUCB(node):
             (math1.log(int(tree[str(tree[str(node)][0])][2]) / int(tree[str(node)][2]))))
 
     return UCB
+
+
+def updateRaveValues(rollouts):
+    global tree
+    print("UPDATING RAVE VALUES...")
+    for roll in rollouts:
+        #print("winning rollout: " + str(roll))
+        rollout_value = roll[0]
+        nodesEncountered = roll[1]
+        for node in nodesEncountered:
+            if str(node) in tree:
+                print("NODE FOUND: " + str(node))
+                print("N[2] & RAVE[3]: " + str(tree[str(node)]))
+                N = int(tree[str(node)][2])  # number of times node is visited
+                RAVE = int(tree[str(node)][3])  # rave value from tree
+                print("PREVIOUS RAVE VALUE: " + str(tree[str(node)][3]))
+                tree[str(node)][3] = (RAVE * N + rollout_value) / (N + 1)  # updateRaveValue
+                print("UPDATED RAVE VALUE: " + str(tree[str(node)][3]))
+                tree[str(node)][2] += 1
+                print("UPDATED N VALUE: " + str(tree[str(node)][2]))
+            else:
+
+                #print("nodeEncountered: " + str(nodesEncountered[0]))
+                #print("tree: " + str(tree))
+                print("NODE NOT FOUND IN TREE")
 
 
 def successors(state):
@@ -78,13 +106,13 @@ def successors(state):
 
     for i in range(board_size):
         for j in range(board_size):
-           # print("current board: " + str(current_board))
+            # print("current board: " + str(current_board))
             next_state = copy.deepcopy(current_board)
-           # print("next state: " + str(next_state))
+            # print("next state: " + str(next_state))
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
                 next_state[i][j] = to_move
                 res.append([next_state, to_move_num])
-  #  print(res)
+    #  print(res)
 
     return res
 
@@ -107,7 +135,8 @@ def terminal_test(state):
         # checks vertical wins
         for i in range(dim - 5):
             for j in range(dim):
-                if current_board[i][j] == current_board[i + 1][j] == current_board[i + 2][j] == current_board[i + 3][j] == current_board[i + 4][j]:
+                if current_board[i][j] == current_board[i + 1][j] == current_board[i + 2][j] == current_board[i + 3][
+                    j] == current_board[i + 4][j]:
                     winner = current_board[i][j]
                     winner_found = True
 
@@ -116,7 +145,8 @@ def terminal_test(state):
         while i < board_size:
             j = 0
             while j < board_size - 4:
-                if current_board[i][j] == current_board[i - 1][j + 1] == current_board[i - 2][j + 2] == current_board[i - 3][j + 3] == current_board[i - 4][j + 4]:
+                if current_board[i][j] == current_board[i - 1][j + 1] == current_board[i - 2][j + 2] == \
+                        current_board[i - 3][j + 3] == current_board[i - 4][j + 4]:
                     winner = current_board[i][j]
                     winner_found = True
 
@@ -160,7 +190,7 @@ def terminal_test(state):
 def rollout(state):
     bestPath = []
     while True:
-       # print(state)
+        # print(state)
         terminal, utility, path = terminal_test(state)
         if terminal:
             return utility, bestPath
@@ -171,19 +201,25 @@ def rollout(state):
             bestPath.append(state)
 
 
+
 # rollout function
 def MCR_player(state):
     turn = state[1]
     n = random.randint(1, 6)  # performs n many rollouts
     print("n: " + str(n))
     rolloutSim = rollout(state)  # first rollout
+    rollouts = [rolloutSim]
     for i in range(n):
         nextRollout = rollout(state)
+
         if rolloutSim[0] > nextRollout[0] and turn == 1:
             rolloutSim = nextRollout
         elif rolloutSim[0] < nextRollout[0] and turn == 0:
             rolloutSim = nextRollout
-   # print("rolloutSim" + str(rolloutSim))
+
+        rollouts.append(rolloutSim)
+    updateRaveValues(rollouts)
+    print("rolloutSim" + str(rolloutSim))
     return rolloutSim[0], rolloutSim[1][0]
 
 
@@ -191,7 +227,8 @@ def backpropagate(node, rolloutValue):
     global tree
     current = node
     while tree[str(current)][0] != "start":
-        tree[str(current)] = [tree[str(current)][0], str(int(tree[str(current)][1]) + int(rolloutValue)), str(int(tree[str(current)][2]) + 1)]
+        tree[str(current)] = [tree[str(current)][0], int(tree[str(current)][1]) + int(rolloutValue),
+                              int(tree[str(current)][2]) + 1, tree[str(current)][3]]
         current = tree[str(current)][0]  # current becomes parent node
 
 
@@ -212,27 +249,28 @@ def traverse_and_expand(node):
     # Function to travel the tree and expand it
     global tree
     current = node
-    maxUCB = -math1.inf
+    maxRAVE = -math1.inf
     # while current node isn't a leaf node
     while not isLeaf(current):
         # Generate successors
         succ = successors(current)
-        print("succ")
-        print(succ)
-        print("current: " + str(current))
+        # print("succ")
+        # print(succ)
+        # print("current: " + str(current))
         for s in succ:
             # Add each successor to the tree dictionary
-            tree[str(s)] = [current, 0, 0]  # adding successors to tree
-            #print(tree)
+            tree[str(s)] = [current, 0, 0, 0]  # adding successors to tree parent, t, n, RAVE
+            # print(tree)
             # Calculate UCB
-            UCB = calcUCB(s)
+            # UCB = calcUCB(s)
+            RAVE = tree[str(s)][3]
             # If the value for this node is greater, then set it to be the chosen node
-            if (UCB > maxUCB):  # select node which maximises UCB1
-                maxUCB = UCB
-                UCBNode = s
+            if (RAVE > maxRAVE):  # select node which maximises UCB1 #TODO i have changed this
+                maxRAVE = RAVE
+                RAVENode = s
 
         # Change current node
-        current = UCBNode
+        current = RAVENode
 
     # current is a leaf node
     # if the node hasn't been visited, don't expand
@@ -240,18 +278,18 @@ def traverse_and_expand(node):
 
         # Use MCR to determine a value
         value = MCR_player(current)[0]  # rollout value
-        print("hi")
+        # print("hi")
 
         # Once we have the value, backpropogate upwards
         backpropagate(current, value)
-        print("goodbye")
+        # print("goodbye")
 
     # if the node has been visted, expand and add to tree
     else:
         # Recursively runs until a leaf is found
         succ = successors(current)
         for s in succ:
-            tree[str(s)] = [current, 0, 0]  # adding successors to tree
+            tree[str(s)] = [current, 0, 0, 0]  # adding successors to tree
         current = succ[0]  # current = first new child node
         value = MCR_player(current)[0]  # rollout value
         backpropagate(current, value)
@@ -262,7 +300,7 @@ def AI_Player_mcts(state):
     start = timer.time()
     game_state = MCTS(state)
     end = timer.time()
-    duration = end-start
+    duration = end - start
     print("")
     print("AI player moved to state " + str(game_state))
     print("Time taken: " + str(duration))
