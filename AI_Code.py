@@ -10,12 +10,18 @@ import initialise
 tree = {}
 board_size = initialise.board_size
 init_board = initialise.board
+actions = []
 
 
 def MCTS(state):
-    global tree
+    global tree, actions
     tree.clear()
     og_state = [init_board, state[1]]
+
+    #populate the actions list
+    for i in range(board_size*board_size):
+        actions.append([0, 0]) #RAVE value, N
+
     # store intitial state, storing total number of nodes and times visited
     tree[str(og_state)] = ['start', 0, 0, 0]  # dict to store node info: parent, t, n, RAVE
 
@@ -38,15 +44,30 @@ def MCTS(state):
     # Apply UCB formula to all successors #TODO change this to RAVE
     maxRAVE = -math1.inf
     bestNextState = succ[0]
-    print("successors: " + str(succ))
+    #print("successors: " + str(succ))
     for s in succ:
         # thisUCB = calcUCB(s)
-        RAVE = int(tree[str(s)][3])
+        RAVE = raveValueOfSuccessor(state, s)[0]
         if RAVE > maxRAVE:
             maxRAVE = RAVE
             bestNextState = s
     # Return best state
     return bestNextState
+
+#takes the original state and a successor of it and determines the tile
+#that the successor took action on
+def raveValueOfSuccessor(state, successor):
+    actionsIndex = 0
+    state = state[0]
+    successor = successor[0]
+    for i in range(len(state)):
+        for j in range(len(state[0])):
+            if state[i][j] != successor[i][j]:
+                actionsIndex = i * j
+                break
+
+    RAVE = actions[actionsIndex]
+    return RAVE
 
 
 def calcUCB(node):
@@ -62,31 +83,25 @@ def calcUCB(node):
 
     return UCB
 
-
 def updateRaveValues(rollouts):
-    global tree
-    print("UPDATING RAVE VALUES...")
-    for roll in rollouts:
-        #print("winning rollout: " + str(roll))
-        rollout_value = roll[0]
-        nodesEncountered = roll[1]
-        for node in nodesEncountered:
-            if str(node) in tree:
-                print("NODE FOUND: " + str(node))
-                print("N[2] & RAVE[3]: " + str(tree[str(node)]))
-                N = int(tree[str(node)][2])  # number of times node is visited
-                RAVE = int(tree[str(node)][3])  # rave value from tree
-                print("PREVIOUS RAVE VALUE: " + str(tree[str(node)][3]))
-                tree[str(node)][3] = str((RAVE * N + rollout_value) / (N + 1))  # updateRaveValue
-                print("UPDATED RAVE VALUE: " + str(tree[str(node)][3]))
-                tree[str(node)][2] = str(int(tree[str(node)][2]) + 1)
-                print("UPDATED N VALUE: " + str(tree[str(node)][2]))
-            else:
+    global tree, actions
+    print("UPDATING RAVE VALUES")
+    print("rollout: " + str(rollouts[0]))
+    for rollout in rollouts:
+        rollout_value = rollout[0]
+        best_path = rollout[1]
+        final_state = rollout[1][len(best_path) - 1][0]
 
-                #print("nodeEncountered: " + str(nodesEncountered[0]))
-                #print("tree: " + str(tree))
-                print("NODE NOT FOUND IN TREE")
+        for i in range(len(final_state)):
+            for j in range(len(final_state[0])):
+                    if final_state[i][j] == 'X' or final_state[i][j] == 'O':
+                        pos = i*j
+                        RAVE = actions[pos][0]
+                        N = actions[pos][1]
+                        actions[pos][0] = (RAVE * N + rollout_value) / (N + 1)
+                        actions[pos][1] = (N + 1)
 
+    print("ACTIONS: " + str(actions))
 
 def successors(state):
     to_move = state[1]
@@ -106,13 +121,10 @@ def successors(state):
 
     for i in range(board_size):
         for j in range(board_size):
-            # print("current board: " + str(current_board))
             next_state = copy.deepcopy(current_board)
-            # print("next state: " + str(next_state))
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
                 next_state[i][j] = to_move
                 res.append([next_state, to_move_num])
-    #  print(res)
 
     return res
 
@@ -190,7 +202,6 @@ def terminal_test(state):
 def rollout(state):
     bestPath = []
     while True:
-        # print(state)
         terminal, utility, path = terminal_test(state)
         if terminal:
             return utility, bestPath
@@ -200,13 +211,10 @@ def rollout(state):
             state = succ[index]
             bestPath.append(state)
 
-
-
 # rollout function
 def MCR_player(state):
     turn = state[1]
     n = random.randint(1, 6)  # performs n many rollouts
-    print("n: " + str(n))
     rolloutSim = rollout(state)  # first rollout
     rollouts = [rolloutSim]
     for i in range(n):
@@ -219,8 +227,7 @@ def MCR_player(state):
 
         rollouts.append(rolloutSim)
 
-    updateRaveValues(rollouts)
-    print("rolloutSim" + str(rolloutSim))
+    updateRaveValues(rollouts) #sends final rollout to update the RAVE values via the actions
     if(len(rolloutSim[1]) == 0):
         return rolloutSim[0], [state]
     else:
@@ -256,21 +263,15 @@ def traverse_and_expand(node):
     maxRAVE = -math1.inf
     # while current node isn't a leaf node
     while not isLeaf(current):
-        print("wow the current node isnt a leaf!")
         # Generate successors
         succ = successors(current)
-        # print("succ")
-        # print(succ)
-        # print("current: " + str(current))
         for s in succ:
             # Add each successor to the tree dictionary
             tree[str(s)] = [current, 0, 0, 0]  # adding successors to tree parent, t, n, RAVE
-            # print(tree)
-            # Calculate UCB
-            # UCB = calcUCB(s)
-            RAVE = tree[str(s)][3]
+
+            RAVE = raveValueOfSuccessor(node, s)[0]
             # If the value for this node is greater, then set it to be the chosen node
-            if (RAVE > maxRAVE):  # select node which maximises UCB1 #TODO i have changed this
+            if RAVE > maxRAVE:  # select node which maximises UCB1 #TODO i have changed this
                 maxRAVE = RAVE
                 RAVENode = s
 
