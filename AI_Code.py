@@ -30,6 +30,7 @@ def MCTS(state):
         # Expand the tree
         traverse_and_expand(state)
 
+    #checks if the tree is empty
     print("tree: " + str(tree))
     # At end of loop identify successors
     succ = successors(state)
@@ -42,9 +43,8 @@ def MCTS(state):
         if thisUCB > maxUCB:
             maxUCB = thisUCB
             bestNextState = s
-    # Return best state
     return bestNextState
-
+    # Return best state
 
 def calcUCB(node):
     global tree
@@ -173,18 +173,25 @@ def rollout(state):
 
 # rollout function
 def MCR_player(state):
+
     turn = state[1]
     n = random.randint(1, 6)  # performs n many rollouts
     print("n: " + str(n))
     rolloutSim = rollout(state)  # first rollout
+
     for i in range(n):
         nextRollout = rollout(state)
         if rolloutSim[0] > nextRollout[0] and turn == 1:
             rolloutSim = nextRollout
         elif rolloutSim[0] < nextRollout[0] and turn == 0:
             rolloutSim = nextRollout
-   # print("rolloutSim" + str(rolloutSim))
-    return rolloutSim[0], rolloutSim[1][0]
+
+    print("rolloutSim" + str(rolloutSim))
+
+    if len(rolloutSim[1]) == 0:
+        return rolloutSim[0], [state]
+    else:
+        return rolloutSim[0], rolloutSim[1][0]
 
 
 def backpropagate(node, rolloutValue):

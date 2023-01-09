@@ -10,3 +10,6 @@ effectiveness on the Gomoku problem, testing it and then implementing RAVE.
 
 given enough time the monte carlo tree search method is making different moves depending on the context
 which is a good sign
+
+08/01/2023 - win conditions arent working for the AI code, need to get rid of check for successors in the tree, slows
+the program down massively..
