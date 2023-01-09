@@ -20,7 +20,7 @@ def MCTS(state):
     tree[str(og_state)] = ['start', 0, 0, 0]  # dict to store node info: parent, t, n, RAVE
 
     # add first node
-    tree[str(state)] = [og_state, 0, 0, 0]
+    tree[str(state)] = [str(og_state), 0, 0, 0]
 
     # set a timeout
     timeout = 15
@@ -77,9 +77,9 @@ def updateRaveValues(rollouts):
                 N = int(tree[str(node)][2])  # number of times node is visited
                 RAVE = int(tree[str(node)][3])  # rave value from tree
                 print("PREVIOUS RAVE VALUE: " + str(tree[str(node)][3]))
-                tree[str(node)][3] = (RAVE * N + rollout_value) / (N + 1)  # updateRaveValue
+                tree[str(node)][3] = str((RAVE * N + rollout_value) / (N + 1))  # updateRaveValue
                 print("UPDATED RAVE VALUE: " + str(tree[str(node)][3]))
-                tree[str(node)][2] += 1
+                tree[str(node)][2] = str(int(tree[str(node)][2]) + 1)
                 print("UPDATED N VALUE: " + str(tree[str(node)][2]))
             else:
 
@@ -218,17 +218,21 @@ def MCR_player(state):
             rolloutSim = nextRollout
 
         rollouts.append(rolloutSim)
+
     updateRaveValues(rollouts)
     print("rolloutSim" + str(rolloutSim))
-    return rolloutSim[0], rolloutSim[1][0]
+    if(len(rolloutSim[1]) == 0):
+        return rolloutSim[0], [state]
+    else:
+        return rolloutSim[0], rolloutSim[1][0]
 
 
 def backpropagate(node, rolloutValue):
     global tree
     current = node
     while tree[str(current)][0] != "start":
-        tree[str(current)] = [tree[str(current)][0], int(tree[str(current)][1]) + int(rolloutValue),
-                              int(tree[str(current)][2]) + 1, tree[str(current)][3]]
+        tree[str(current)] = [tree[str(current)][0], str(int(tree[str(current)][1]) + int(rolloutValue)),
+                              str(int(tree[str(current)][2]) + 1), str(tree[str(current)][3])]
         current = tree[str(current)][0]  # current becomes parent node
 
 
@@ -252,6 +256,7 @@ def traverse_and_expand(node):
     maxRAVE = -math1.inf
     # while current node isn't a leaf node
     while not isLeaf(current):
+        print("wow the current node isnt a leaf!")
         # Generate successors
         succ = successors(current)
         # print("succ")
@@ -277,6 +282,7 @@ def traverse_and_expand(node):
     if (tree[str(current)][1] == 0):  # ni value for node is 0
 
         # Use MCR to determine a value
+        print("current is leaf node and hasn't been visited")
         value = MCR_player(current)[0]  # rollout value
         # print("hi")
 
@@ -291,6 +297,7 @@ def traverse_and_expand(node):
         for s in succ:
             tree[str(s)] = [current, 0, 0, 0]  # adding successors to tree
         current = succ[0]  # current = first new child node
+        print("current is leaf node and has been visited")
         value = MCR_player(current)[0]  # rollout value
         backpropagate(current, value)
     return
