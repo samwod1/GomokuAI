@@ -1,5 +1,5 @@
-import Game_Code
+import Game
 
-Game_Code.reset_board()
-Game_Code.game_loop()
+Game.reset_board()
+Game.game_loop()
 

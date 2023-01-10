@@ -1,6 +1,6 @@
 import sys
 import pygame
-import AI_Code
+import AI
 from initialise import *
 
 pygame.init()
@@ -250,7 +250,7 @@ def game_loop():
 
                 pygame.display.update()
                 if game_finished == False and to_move == "O":
-                    board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
+                    board, to_move = AI.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
                     if game_finished:
                         reset_board()
 

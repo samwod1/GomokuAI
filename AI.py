@@ -4,7 +4,7 @@ import random
 import time as timer
 
 import pygame
-import Game_Code
+import Game
 import initialise
 
 tree = {}
@@ -37,7 +37,7 @@ def MCTS(state):
         # Expand the tree
         traverse_and_expand(state)
 
-    print("tree: " + str(tree))
+    #print("tree: " + str(tree))
     # At end of loop identify successors
     succ = successors(state)
 
@@ -51,6 +51,9 @@ def MCTS(state):
         if RAVE > maxRAVE:
             maxRAVE = RAVE
             bestNextState = s
+
+    print("MCTS  Stage has chosen the state: " + str(bestNextState) + " with RAVE value: " + str(maxRAVE))
+
     # Return best state
     return bestNextState
 
@@ -73,7 +76,7 @@ def raveValueOfSuccessor(state, successor):
 def updateRaveValues(rollouts):
     global tree, actions
     print("UPDATING RAVE VALUES")
-    print("rollout: " + str(rollouts[0]))
+    #print("rollout: " + str(rollouts[0]))
     for rollout in rollouts:
         rollout_value = rollout[0]
         best_path = rollout[1]
@@ -202,7 +205,8 @@ def rollout(state):
 # rollout function
 def MCR_player(state):
     turn = state[1]
-    n = random.randint(1, 6)  # performs n many rollouts
+    n = random.randint(1, 10)  # performs n many rollouts
+    print("PERFORMING " + str(n) + " ROLLOUTS...")
     rolloutSim = rollout(state)  # first rollout
     rollouts = [rolloutSim]
     for i in range(n):
@@ -255,7 +259,7 @@ def traverse_and_expand(node):
         succ = successors(current)
         for s in succ:
             # Add each successor to the tree dictionary
-            tree[str(s)] = [current, 0, 0]  # adding successors to tree parent, t, n, RAVE
+            tree[str(s)] = [current, 0, 0]  # adding successors to tree parent, t, n
 
             RAVE = raveValueOfSuccessor(node, s)[0]
             # If the value for this node is greater, then set it to be the chosen node
@@ -265,6 +269,8 @@ def traverse_and_expand(node):
 
         # Change current node
         current = RAVENode
+
+    print("Traverse and Expand Stage has chosen the state: " + str(current) + " with RAVE value: " + str(maxRAVE))
 
     # current is a leaf node
     # if the node hasn't been visited, don't expand
@@ -324,7 +330,7 @@ def add_XO_AI(current_board, current_graphical_board, to_move, X_IMG, O_IMG, SCR
     else:
         to_move = 'X'
 
-    Game_Code.render_board(current_board, X_IMG, O_IMG)
+    Game.render_board(current_board, X_IMG, O_IMG)
 
     for i in range(board_size):
         for j in range(board_size):
