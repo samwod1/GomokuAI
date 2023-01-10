@@ -10,6 +10,7 @@ import initialise
 tree = {}
 board_size = initialise.board_size
 init_board = initialise.board
+BOARD_SIZE = initialise.BOARD_SIZE
 actions = []
 
 
@@ -17,16 +18,15 @@ def MCTS(state):
     global tree, actions
     tree.clear()
     og_state = [init_board, state[1]]
-
     #populate the actions list
     for i in range(board_size*board_size):
         actions.append([0, 0]) #RAVE value, N
 
     # store intitial state, storing total number of nodes and times visited
-    tree[str(og_state)] = ['start', 0, 0, 0]  # dict to store node info: parent, t, n, RAVE
+    tree[str(og_state)] = ['start', 0, 0]  # dict to store node info: parent, t, n, RAVE
 
     # add first node
-    tree[str(state)] = [str(og_state), 0, 0, 0]
+    tree[str(state)] = [str(og_state), 0, 0]
 
     # set a timeout
     timeout = 15
@@ -57,31 +57,18 @@ def MCTS(state):
 #takes the original state and a successor of it and determines the tile
 #that the successor took action on
 def raveValueOfSuccessor(state, successor):
-    actionsIndex = 0
+    actionsIndex = -1
     state = state[0]
     successor = successor[0]
+    RAVE = actions[actionsIndex]
     for i in range(len(state)):
         for j in range(len(state[0])):
+            actionsIndex += 1
             if state[i][j] != successor[i][j]:
-                actionsIndex = i * j
+                RAVE = actions[actionsIndex]
                 break
 
-    RAVE = actions[actionsIndex]
     return RAVE
-
-
-def calcUCB(node):
-    global tree
-    C = 2
-    # if empty node make it inf else apply UCB1 formula
-    if tree[str(node)][1] == 0 and tree[str(node)][2] == 0:
-        UCB = math1.inf
-    else:
-        # apply UCB
-        UCB = int(tree[str(node)][1]) + C * math1.sqrt(
-            (math1.log(int(tree[str(tree[str(node)][0])][2]) / int(tree[str(node)][2]))))
-
-    return UCB
 
 def updateRaveValues(rollouts):
     global tree, actions
@@ -91,15 +78,16 @@ def updateRaveValues(rollouts):
         rollout_value = rollout[0]
         best_path = rollout[1]
         final_state = rollout[1][len(best_path) - 1][0]
+        pos = -1
 
         for i in range(len(final_state)):
             for j in range(len(final_state[0])):
-                    if final_state[i][j] == 'X' or final_state[i][j] == 'O':
-                        pos = i*j
-                        RAVE = actions[pos][0]
-                        N = actions[pos][1]
-                        actions[pos][0] = (RAVE * N + rollout_value) / (N + 1)
-                        actions[pos][1] = (N + 1)
+                pos += 1
+                if final_state[i][j] == 'X' or final_state[i][j] == 'O':
+                    RAVE = actions[pos][0]
+                    N = actions[pos][1]
+                    actions[pos][0] = (RAVE * N + rollout_value) / (N + 1)
+                    actions[pos][1] = (N + 1)
 
     print("ACTIONS: " + str(actions))
 
@@ -239,7 +227,7 @@ def backpropagate(node, rolloutValue):
     current = node
     while tree[str(current)][0] != "start":
         tree[str(current)] = [tree[str(current)][0], str(int(tree[str(current)][1]) + int(rolloutValue)),
-                              str(int(tree[str(current)][2]) + 1), str(tree[str(current)][3])]
+                              str(int(tree[str(current)][2]) + 1)]
         current = tree[str(current)][0]  # current becomes parent node
 
 
@@ -267,7 +255,7 @@ def traverse_and_expand(node):
         succ = successors(current)
         for s in succ:
             # Add each successor to the tree dictionary
-            tree[str(s)] = [current, 0, 0, 0]  # adding successors to tree parent, t, n, RAVE
+            tree[str(s)] = [current, 0, 0]  # adding successors to tree parent, t, n, RAVE
 
             RAVE = raveValueOfSuccessor(node, s)[0]
             # If the value for this node is greater, then set it to be the chosen node
