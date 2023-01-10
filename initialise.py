@@ -25,13 +25,10 @@ O_IMG = pygame.transform.scale(O_IMG, (22, 22))
 O_WIN = pygame.image.load("assets/stone win.png")
 O_WIN = pygame.transform.scale(O_WIN, (22, 22))
 
-board = [list(range(1, 16)), list(range(16, 31)), list(range(31, 46)), list(range(46, 61)),
-         list(range(61, 76)),
-         list(range(76, 91)), list(range(91, 106)), list(range(106, 121)), list(range(121, 136)),
-         list(range(136, 151)),
-         list(range(151, 166)), list(range(166, 181)), list(range(181, 196)), list(range(196, 211)),
-         list(range(211, 226))]
+board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)),
+         list(range(37, 46)),
+         list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
 
 BG_COLOR = (255, 253, 243)
-board_size = 15
+board_size = 9
 game_finished = False

@@ -15,6 +15,7 @@ def MCTS(state):
     global tree
     tree.clear()
     og_state = [init_board, state[1]]
+
     # store intitial state, storing total number of nodes and times visited
     tree[str(og_state)] = ['start', 0, 0]  # dict to store node info: parent, t, n
 

@@ -1,6 +1,7 @@
 import sys
 import pygame
 import AI_Code
+import initialise
 from initialise import *
 
 pygame.init()
@@ -17,7 +18,7 @@ def grid(SCREEN, size, board_size):
     pygame.draw.line(SCREEN, (0, 0, 0), (x, 100), (x, size + 100))
     pygame.draw.line(SCREEN, (0, 0, 0), (100, y), (size + 100, y))
 
-    for i in range(15):
+    for i in range(board_size):
         x += distanceBtwRows
         y += distanceBtwRows
         pygame.draw.line(SCREEN, (0, 0, 0), (x, 100), (x, size + 100))
@@ -34,14 +35,10 @@ def redraw():
 def reset_board():
     global graphical_board, board, to_move, game_finished
 
-    board = [list(range(1, 16)), list(range(16, 31)), list(range(31, 46)), list(range(46, 61)),
-             list(range(61, 76)),
-             list(range(76, 91)), list(range(91, 106)), list(range(106, 121)), list(range(121, 136)),
-             list(range(136, 151)),
-             list(range(151, 166)), list(range(166, 181)), list(range(181, 196)), list(range(196, 211)),
-             list(range(211, 226))]
+    board = initialise.board
 
     graphical_board = []
+
     for i in range(board_size):
         graphical_board.append([])
         for j in range(board_size):
@@ -250,7 +247,8 @@ def game_loop():
 
                 pygame.display.update()
                 if game_finished == False and to_move == "O":
-                    board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
+                    #board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
+                    board, to_move = add_XO(board, graphical_board, to_move)
                     if game_finished:
                         reset_board()
 
