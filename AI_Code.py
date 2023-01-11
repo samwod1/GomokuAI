@@ -13,7 +13,7 @@ init_board = initialise.board
 
 def MCTS(state):
     global tree
-    tree.clear()
+    #tree.clear()
     og_state = [init_board, state[1]]
 
     # store intitial state, storing total number of nodes and times visited
@@ -25,11 +25,13 @@ def MCTS(state):
     # set a timeout
     timeout = 15
     start = timer.time()
+    iterations = 0
 
     # Run MCTS
-    while timer.time() < start + timeout:
+    while iterations < 5:
         # Expand the tree
         traverse_and_expand(state)
+        iterations += 1
 
     #checks if the tree is empty
     print("tree: " + str(tree))
@@ -59,8 +61,7 @@ def calcUCB(node):
         UCB = math1.inf
     else:
         # apply UCB
-        UCB = int(tree[str(node)][1]) + C * math1.sqrt(
-            (math1.log(int(tree[str(tree[str(node)][0])][2]) / int(tree[str(node)][2]))))
+        UCB = int(tree[str(node)][1]) + C * math1.sqrt((math1.log(int(tree[str(tree[str(node)][0])][2]) / int(tree[str(node)][2]))))
 
     print("calcUCB: " + str(UCB))
     return UCB
@@ -181,8 +182,8 @@ def rollout(state):
 def MCR_player(state):
 
     turn = state[1]
-    n = random.randint(1, 6)  # performs n many rollouts
-    #print("n: " + str(n))
+    n = random.randint(1, 10)  # performs n many rollouts
+    # print("n: " + str(n))
     rolloutSim = rollout(state)  # first rollout
 
     for i in range(n):
@@ -192,7 +193,7 @@ def MCR_player(state):
         elif rolloutSim[0] < nextRollout[0] and turn == 0:
             rolloutSim = nextRollout
 
-    #print("rolloutSim" + str(rolloutSim))
+    # print("rolloutSim" + str(rolloutSim))
 
     if len(rolloutSim[1]) == 0:
         return rolloutSim[0], [state]
@@ -238,7 +239,7 @@ def traverse_and_expand(node):
         print("succ: " + str(succ))
         for s in succ:
             # Add each successor to the tree dictionary
-            if tree.get(str(s)) == 0: #check to see if the successor is already in the tree, so it doesnt overwrite its stats
+            if tree.get(str(s)) is None: #check to see if the successor is already in the tree, so it doesnt overwrite its stats
                 tree[str(s)] = [current, 0, 0]  # adding successors to tree
             #print(tree)
             # Calculate UCB
@@ -275,7 +276,9 @@ def traverse_and_expand(node):
         # Recursively runs until a leaf is found
         succ = successors(current)
         for s in succ:
-            tree[str(s)] = [current, 0, 0]  # adding successors to tree
+            if tree.get(str(s)) is None:
+                tree[str(s)] = [current, 0, 0]  # adding successors to tree
+
         current = succ[0]  # current = first new child node
         value = MCR_player(current)[0]  # rollout value
         backpropagate(current, value)
