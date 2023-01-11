@@ -33,9 +33,11 @@ def redraw():
 
 
 def reset_board():
+
     global graphical_board, board, to_move, game_finished
 
-    board = initialise.board
+    board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
+             list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
 
     graphical_board = []
 
@@ -141,7 +143,6 @@ def check_win_2(current_board):
 
                     if winnerImg is not None:
                         graphical_board[i][j][0] = winnerImg
-                        print(graphical_board[i][j][0], graphical_board[i][j][1])
                         SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
                         graphical_board[i + 1][j][0] = winnerImg
                         SCREEN.blit(graphical_board[i + 1][j][0], graphical_board[i + 1][j][1])
@@ -248,8 +249,8 @@ def game_loop():
 
                 pygame.display.update()
                 if game_finished == False and to_move == "O":
-                    #board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
-                    board, to_move = add_XO(board, graphical_board, to_move)
+                    board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
+                    #board, to_move = add_XO(board, graphical_board, to_move)
                     if game_finished:
                         reset_board()
 

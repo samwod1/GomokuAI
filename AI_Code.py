@@ -23,7 +23,7 @@ def MCTS(state):
     tree[str(state)] = [og_state, 0, 0]
 
     # set a timeout
-    timeout = 20
+    timeout = 15
     start = timer.time()
 
     # Run MCTS
@@ -40,10 +40,14 @@ def MCTS(state):
     maxUCB = -math1.inf
     bestNextState = succ[0]
     for s in succ:
+        print("Successor: " + str(s))
         thisUCB = calcUCB(s)
+        print("UCB: " + str(thisUCB))
         if thisUCB > maxUCB:
+            print("thisUCB: " + str(thisUCB) + " is greater than " + str(maxUCB))
             maxUCB = thisUCB
             bestNextState = s
+    print("MCTS has chosen: " + str(bestNextState))
     return bestNextState
     # Return best state
 
@@ -58,6 +62,7 @@ def calcUCB(node):
         UCB = int(tree[str(node)][1]) + C * math1.sqrt(
             (math1.log(int(tree[str(tree[str(node)][0])][2]) / int(tree[str(node)][2]))))
 
+    print("calcUCB: " + str(UCB))
     return UCB
 
 
@@ -69,7 +74,7 @@ def successors(state):
     else:
         to_move = 'O'
 
-    if state[1] == 1:
+    if to_move == 'X':
         to_move_num = 0
     else:
         to_move_num = 1
@@ -177,7 +182,7 @@ def MCR_player(state):
 
     turn = state[1]
     n = random.randint(1, 6)  # performs n many rollouts
-    print("n: " + str(n))
+    #print("n: " + str(n))
     rolloutSim = rollout(state)  # first rollout
 
     for i in range(n):
@@ -187,7 +192,7 @@ def MCR_player(state):
         elif rolloutSim[0] < nextRollout[0] and turn == 0:
             rolloutSim = nextRollout
 
-    print("rolloutSim" + str(rolloutSim))
+    #print("rolloutSim" + str(rolloutSim))
 
     if len(rolloutSim[1]) == 0:
         return rolloutSim[0], [state]
@@ -199,8 +204,10 @@ def backpropagate(node, rolloutValue):
     global tree
     current = node
     while tree[str(current)][0] != "start":
-        tree[str(current)] = [tree[str(current)][0], str(int(tree[str(current)][1]) + int(rolloutValue)), str(int(tree[str(current)][2]) + 1)]
+        tree[str(current)] = [tree[str(current)][0], int(tree[str(current)][1]) + int(rolloutValue), int(tree[str(current)][2]) + 1]
+        print("Backpropogating: " + str([tree[str(current)]]))
         current = tree[str(current)][0]  # current becomes parent node
+
 
 
 def isLeaf(node):
@@ -208,6 +215,7 @@ def isLeaf(node):
     global tree
     leafBool = True
     treeValues = tuple(tree.values())
+  #  print("treeValues: " + str(treeValues))
     for i in range(len(treeValues)):
         if treeValues[i][0] == node:
             leafBool = False and leafBool
@@ -223,39 +231,47 @@ def traverse_and_expand(node):
     maxUCB = -math1.inf
     # while current node isn't a leaf node
     while not isLeaf(current):
+        print("Current is not a leaf!")
         # Generate successors
         succ = successors(current)
-        print("succ")
-        print(succ)
         print("current: " + str(current))
+        print("succ: " + str(succ))
         for s in succ:
             # Add each successor to the tree dictionary
-            tree[str(s)] = [current, 0, 0]  # adding successors to tree
+            if tree.get(str(s)) == 0: #check to see if the successor is already in the tree, so it doesnt overwrite its stats
+                tree[str(s)] = [current, 0, 0]  # adding successors to tree
             #print(tree)
             # Calculate UCB
+            print("Successor: " + str(s))
+            print("Successors Visits: " + str(tree[str(s)][2]))
+            print("Successor Value: " + str(tree[str(s)][1]))
             UCB = calcUCB(s)
+            print("UCB: " + str(UCB))
             # If the value for this node is greater, then set it to be the chosen node
             if (UCB > maxUCB):  # select node which maximises UCB1
                 maxUCB = UCB
                 UCBNode = s
+                print("maxUCB has changed to! " + str(maxUCB))
+                print("UCBNode has changed to! " + str(UCBNode))
 
         # Change current node
+        print("Traverse and Expand has chosen: " + str(UCBNode))
+        print("Is UCBNode a leaf node? " + str(isLeaf(UCBNode)))
         current = UCBNode
 
     # current is a leaf node
     # if the node hasn't been visited, don't expand
-    if (tree[str(current)][1] == 0):  # ni value for node is 0
-
+    if (tree[str(current)][2] == 0):  # ni value for node is 0
+        print("Node hasn't been visited!")
         # Use MCR to determine a value
         value = MCR_player(current)[0]  # rollout value
-        print("hi")
 
         # Once we have the value, backpropogate upwards
         backpropagate(current, value)
-        print("goodbye")
 
     # if the node has been visted, expand and add to tree
     else:
+        print("Node has been visited!")
         # Recursively runs until a leaf is found
         succ = successors(current)
         for s in succ:
