@@ -62,10 +62,10 @@ def render_board(board, X_IMG, O_IMG):
         for j in range(board_size):
             if board[i][j] == 'X':
                 graphical_board[i][j][0] = X_IMG
-                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * 27 + 114, i * 27 + 114))
+                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * 37 + 114, i * 37 + 114))
             elif board[i][j] == 'O':
                 graphical_board[i][j][0] = O_IMG
-                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * 27 + 114, i * 27 + 114))
+                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * 37 + 114, i * 37 + 114))
 
 
 def add_XO(board, graphical_board, to_move):
@@ -99,7 +99,7 @@ def check_win_2(current_board):
         # checks all horizontal wins
         winner = None
         for i in range(dim):
-            for j in range(dim - 5):
+            for j in range(dim - 4):
                 if current_board[i][j] == current_board[i][j + 1] == current_board[i][j + 2] == current_board[i][
                     j + 3] == current_board[i][j + 4]:
 
@@ -126,7 +126,7 @@ def check_win_2(current_board):
                         pygame.display.update()
 
         # checks vertical wins
-        for i in range(dim - 5):
+        for i in range(dim - 4):
             for j in range(dim):
                 if current_board[i][j] == current_board[i + 1][j] == current_board[i + 2][j] == current_board[i + 3][
                     j] == current_board[i + 4][j]:
@@ -141,6 +141,7 @@ def check_win_2(current_board):
 
                     if winnerImg is not None:
                         graphical_board[i][j][0] = winnerImg
+                        print(graphical_board[i][j][0], graphical_board[i][j][1])
                         SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
                         graphical_board[i + 1][j][0] = winnerImg
                         SCREEN.blit(graphical_board[i + 1][j][0], graphical_board[i + 1][j][1])
