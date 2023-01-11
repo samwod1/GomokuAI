@@ -62,16 +62,16 @@ def render_board(board, X_IMG, O_IMG):
         for j in range(board_size):
             if board[i][j] == 'X':
                 graphical_board[i][j][0] = X_IMG
-                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * 37 + 114, i * 37 + 114))
+                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * 46.25 + 114, i * 46.25 + 114))
             elif board[i][j] == 'O':
                 graphical_board[i][j][0] = O_IMG
-                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * 37 + 114, i * 37 + 114))
+                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * 46.25 + 114, i * 46.25 + 114))
 
 
 def add_XO(board, graphical_board, to_move):
     current_pos = pygame.mouse.get_pos()
-    converted_x = round((current_pos[0] - 114) / 27)  # muck about with these values
-    converted_y = round((current_pos[1] - 114) / 27)
+    converted_x = round((current_pos[0] - 114) / 45)  # muck about with these values
+    converted_y = round((current_pos[1] - 118) / 47)
 
     if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0:
 
