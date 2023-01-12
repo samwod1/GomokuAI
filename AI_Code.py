@@ -28,7 +28,7 @@ def MCTS(state):
     iterations = 0
 
     # Run MCTS
-    while iterations < 5:
+    while iterations < 15:
         # Expand the tree
         traverse_and_expand(state)
         iterations += 1
