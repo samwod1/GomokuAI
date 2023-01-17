@@ -10,8 +10,7 @@ def get_board_size():
     return board_size
 
 
-def grid(SCREEN, size, board_size):
-    distanceBtwRows = size // board_size
+def grid(SCREEN, size, board_size, distanceBtwRows):
     x = 100
     y = 100
 
@@ -26,9 +25,9 @@ def grid(SCREEN, size, board_size):
 
 
 def redraw():
-    global SCREEN, WIDTH, board_size
+    global SCREEN, WIDTH, board_size, distanceBtwRows
 
-    grid(SCREEN, BOARD_SIZE, board_size)
+    grid(SCREEN, BOARD_SIZE, board_size, distanceBtwRows)
     pygame.display.update()
 
 
@@ -36,8 +35,17 @@ def reset_board():
 
     global graphical_board, board, to_move, game_finished
 
-    board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
-             list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
+    # board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
+    #          list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
+    board = []
+    count = 0
+
+    for i in range(board_size):
+        count += 1
+        board.append([count])
+        for j in range(board_size - 1):
+            count += 1
+            board[i].append(count)
 
     graphical_board = []
 
@@ -64,16 +72,16 @@ def render_board(board, X_IMG, O_IMG):
         for j in range(board_size):
             if board[i][j] == 'X':
                 graphical_board[i][j][0] = X_IMG
-                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * 46.25 + 114, i * 46.25 + 114))
+                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * distanceBtwRows + 121, i * distanceBtwRows + 121))
             elif board[i][j] == 'O':
                 graphical_board[i][j][0] = O_IMG
-                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * 46.25 + 114, i * 46.25 + 114))
+                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * distanceBtwRows + 121, i * distanceBtwRows + 121))
 
 
 def add_XO(board, graphical_board, to_move):
     current_pos = pygame.mouse.get_pos()
-    converted_x = round((current_pos[0] - 114) / 45)  # muck about with these values
-    converted_y = round((current_pos[1] - 118) / 47)
+    converted_x = round((current_pos[0] - 121) / distanceBtwRows)  # muck about with these values
+    converted_y = round((current_pos[1] - 121) / distanceBtwRows)
 
     if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0:
 
@@ -94,136 +102,124 @@ def add_XO(board, graphical_board, to_move):
     return board, to_move
 
 def check_win_2(current_board):
+
     dim = board_size
+    dum = dim - (winCondition - 1)
+    win_found = False
+    winner = None
+    win_type = None
+    win_position = (0, 0)
 
-    winner_found = False
-    while not winner_found:
-        # checks all horizontal wins
-        winner = None
+    while not win_found:
+
         for i in range(dim):
-            for j in range(dim - 4):
-                if current_board[i][j] == current_board[i][j + 1] == current_board[i][j + 2] == current_board[i][
-                    j + 3] == current_board[i][j + 4]:
-
-                    winner = current_board[i][j]
-
-                    winnerImg = None
-
-                    if (winner == 'X'):
-                        winnerImg = X_WIN
+            for j in range(dum):
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i][j + winConditionCount]:
+                        winConditionCount -= 1
                     else:
-                        winnerImg = O_WIN
+                        sequenceBroken = True
+                if not sequenceBroken:
+                    winner = current_board[i][j]
+                    win_position = (i, j)
+                    win_type = "horizontal"
+                    win_found = True
 
-                    if winnerImg is not None:
-                        graphical_board[i][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
-                        graphical_board[i][j + 1][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j + 1][0], graphical_board[i][j + 1][1])
-                        graphical_board[i][j + 2][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j + 2][0], graphical_board[i][j + 2][1])
-                        graphical_board[i][j + 3][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j + 3][0], graphical_board[i][j + 3][1])
-                        graphical_board[i][j + 4][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j + 4][0], graphical_board[i][j + 4][1])
-                        pygame.display.update()
-
-        # checks vertical wins
-        for i in range(dim - 4):
+        for i in range(dum):
             for j in range(dim):
-                if current_board[i][j] == current_board[i + 1][j] == current_board[i + 2][j] == current_board[i + 3][
-                    j] == current_board[i + 4][j]:
-                    winner = current_board[i][j]
-
-                    winnerImg = None
-
-                    if (winner == 'X'):
-                        winnerImg = X_WIN
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i + winConditionCount][j]:
+                        winConditionCount -= 1
                     else:
-                        winnerImg = O_WIN
-
-                    if winnerImg is not None:
-                        graphical_board[i][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
-                        graphical_board[i + 1][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i + 1][j][0], graphical_board[i + 1][j][1])
-                        graphical_board[i + 2][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i + 2][j][0], graphical_board[i + 2][j][1])
-                        graphical_board[i + 3][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i + 3][j][0], graphical_board[i + 3][j][1])
-                        graphical_board[i + 4][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i + 4][j][0], graphical_board[i + 4][j][1])
-                        pygame.display.update()
-
-        # checks diagonal wins
-        i = 4
-        while i < board_size:
-            j = 0
-            while j < board_size - 4:
-                if current_board[i][j] == current_board[i - 1][j + 1] == current_board[i - 2][j + 2] == \
-                        current_board[i - 3][j + 3] == current_board[i - 4][j + 4]:
+                        sequenceBroken = True
+                if not sequenceBroken:
                     winner = current_board[i][j]
+                    win_position = (i, j)
+                    win_type = "vertical"
+                    win_found = True
 
-                    winnerImg = None
-
-                    if winner == 'X':
-                        winnerImg = X_WIN
+        for i in range((winCondition - 1), dim):
+            for j in range(dum):
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i - winConditionCount][j + winConditionCount]:
+                        winConditionCount -= 1
                     else:
-                        winnerImg = O_WIN
+                        sequenceBroken = True
 
-                    if winnerImg is not None:
-                        graphical_board[i][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
-                        graphical_board[i - 1][j + 1][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 1][j + 1][0], graphical_board[i - 1][j + 1][1])
-                        graphical_board[i - 2][j + 2][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 2][j + 2][0], graphical_board[i - 2][j + 2][1])
-                        graphical_board[i - 3][j + 3][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 3][j + 3][0], graphical_board[i - 3][j + 3][1])
-                        graphical_board[i - 4][j + 4][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 4][j + 4][0], graphical_board[i - 4][j + 4][1])
-                        pygame.display.update()
-                j += 1
-            i += 1
-
-        # checks other diagonals
-        i = 4
-        while i < board_size:
-            j = 4
-            while j < board_size:
-                if current_board[i][j] == current_board[i - 1][j - 1] == current_board[i - 2][j - 2] == \
-                        current_board[i - 3][j - 3] == current_board[i - 4][j - 4]:
+                if not sequenceBroken:
                     winner = current_board[i][j]
+                    win_position = (i, j)
+                    win_type = "diagonals"
+                    win_found = True
 
-                    winnerImg = None
-
-                    if winner == 'X':
-                        winnerImg = X_WIN
+        for i in range((winCondition - 1), dim):
+            for j in range((winCondition - 1), dim):
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i - winConditionCount][j - winConditionCount]:
+                        winConditionCount -= 1
                     else:
-                        winnerImg = O_WIN
+                        sequenceBroken = True
 
-                    if winnerImg is not None:
-                        graphical_board[i][j][0] = winnerImg
-                        SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
-                        graphical_board[i - 1][j - 1][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 1][j - 1][0], graphical_board[i - 1][j - 1][1])
-                        graphical_board[i - 2][j - 2][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 2][j - 2][0], graphical_board[i - 2][j - 2][1])
-                        graphical_board[i - 3][j - 3][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 3][j - 3][0], graphical_board[i - 3][j - 3][1])
-                        graphical_board[i - 4][j - 4][0] = winnerImg
-                        SCREEN.blit(graphical_board[i - 4][j - 4][0], graphical_board[i - 4][j - 4][1])
-                        pygame.display.update()
-                j += 1
-            i += 1
-
-        if winner is None:
-            for i in range(len(current_board)):
-                for j in range(len(current_board)):
-                    if current_board[i][j] != 'X' and current_board[i][j] != 'O':
-                        return None
-            return "DRAW"
+                if not sequenceBroken:
+                    winner = current_board[i][j]
+                    win_position = (i, j)
+                    win_type = "other diagonals"
+                    win_found = True
 
         break
+
+    if not win_found:
+        for i in range(dim):
+            for j in range(dim):
+                if current_board[i][j] != 'X' and current_board[i][j] != 'O':
+                    return None
+        return "DRAW"
+
+    if winner == 'X':
+        winner_IMG = X_WIN
+    else:
+        winner_IMG = O_WIN
+
+    if winner is not None:
+        winConditionCount = winCondition - 1
+        i = win_position[0]
+        j = win_position[1]
+        if win_type == "horizontal":
+            while winConditionCount >= 0:
+                graphical_board[i][j + winConditionCount][0] = winner_IMG
+                SCREEN.blit(graphical_board[i][j + winConditionCount][0], graphical_board[i][j + winConditionCount][1])#
+                winConditionCount -= 1
+
+        winConditionCount = winCondition - 1
+        if win_type == "vertical":
+            while winConditionCount >= 0:
+                graphical_board[i + winConditionCount][j][0] = winner_IMG
+                SCREEN.blit(graphical_board[i + winConditionCount][j][0], graphical_board[i + winConditionCount][j][1])
+                winConditionCount -= 1
+
+        winConditionCount = winCondition - 1
+        if win_type == "diagonals":
+            while winConditionCount >= 0:
+                graphical_board[i - winConditionCount][j + winConditionCount][0] = winner_IMG
+                SCREEN.blit(graphical_board[i - winConditionCount][j + winConditionCount][0], graphical_board[i - winConditionCount][j + winConditionCount][1])
+                winConditionCount -= 1
+
+        winConditionCount = winCondition - 1
+        if win_type == "other diagonals":
+            while winConditionCount >= 0:
+                graphical_board[i - winConditionCount][j - winConditionCount][0] = winner_IMG
+                SCREEN.blit(graphical_board[i - winConditionCount][j - winConditionCount][0], graphical_board[i - winConditionCount][j - winConditionCount][1])
+                winConditionCount -= 1
+
+        pygame.display.update()
 
     return winner
 
@@ -249,8 +245,8 @@ def game_loop():
 
                 pygame.display.update()
                 if game_finished == False and to_move == "O":
-                    board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
-                    #board, to_move = add_XO(board, graphical_board, to_move)
+                    #board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
+                    board, to_move = add_XO(board, graphical_board, to_move)
                     if game_finished:
                         reset_board()
 

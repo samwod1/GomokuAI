@@ -27,12 +27,26 @@ O_IMG = pygame.transform.scale(O_IMG, (22, 22))
 O_WIN = pygame.image.load("assets/stone win.png")
 O_WIN = pygame.transform.scale(O_WIN, (22, 22))
 
-board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
-         list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
+# board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
+#          list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
 
 BG_COLOR = (255, 253, 243)
 board_size = 9
 game_finished = False
+
+board = []
+count = 0
+for i in range(board_size):
+    count += 1
+    board.append([count])
+    for j in range(board_size - 1):
+        count += 1
+        board[i].append(count)
+
+print(board)
+
+distanceBtwRows = BOARD_SIZE // board_size
+winCondition = 3
 
 
 # def reset_board_variable():
