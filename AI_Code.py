@@ -10,10 +10,11 @@ import initialise
 tree = {}
 board_size = initialise.board_size
 init_board = initialise.board
+winCondition = initialise.winCondition
 
 def MCTS(state):
     global tree
-    #tree.clear()
+    tree.clear()
     og_state = [init_board, state[1]]
 
     # store intitial state, storing total number of nodes and times visited
@@ -28,7 +29,7 @@ def MCTS(state):
     iterations = 0
 
     # Run MCTS
-    while iterations < 15:
+    while iterations < 5:
         # Expand the tree
         traverse_and_expand(state)
         iterations += 1
@@ -97,71 +98,90 @@ def successors(state):
 
 
 def terminal_test(state):
-    global board_size
+
+    global board_size, winCondition
     current_board = state[0]
-    dim = len(current_board)
+    dim = board_size
+    dum = dim - (winCondition - 1)
 
+    win_found = False
     winner = None
-    winner_found = False
-    while not winner_found:
-        # checks all horizontal wins
+
+    while not win_found:
+
         for i in range(dim):
-            for j in range(dim - 5):
-                if current_board[i][j] == current_board[i][j + 1] == current_board[i][j + 2] == current_board[i][
-                    j + 3] == current_board[i][j + 4]:
+            for j in range(dum):
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i][j + winConditionCount]:
+                        winConditionCount -= 1
+                    else:
+                        sequenceBroken = True
+                if not sequenceBroken:
                     winner = current_board[i][j]
-                    winner_found = True
-        # checks vertical wins
-        for i in range(dim - 5):
+                    win_found = True
+
+        for i in range(dum):
             for j in range(dim):
-                if current_board[i][j] == current_board[i + 1][j] == current_board[i + 2][j] == current_board[i + 3][j] == current_board[i + 4][j]:
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i + winConditionCount][j]:
+                        winConditionCount -= 1
+                    else:
+                        sequenceBroken = True
+                if not sequenceBroken:
                     winner = current_board[i][j]
-                    winner_found = True
+                    win_found = True
 
-        # checks diagonal wins
-        i = 4
-        while i < board_size:
-            j = 0
-            while j < board_size - 4:
-                if current_board[i][j] == current_board[i - 1][j + 1] == current_board[i - 2][j + 2] == current_board[i - 3][j + 3] == current_board[i - 4][j + 4]:
+        for i in range((winCondition - 1), dim):
+            for j in range(dum):
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i - winConditionCount][j + winConditionCount]:
+                        winConditionCount -= 1
+                    else:
+                        sequenceBroken = True
+
+                if not sequenceBroken:
                     winner = current_board[i][j]
-                    winner_found = True
+                    win_found = True
 
-                j += 1
-            i += 1
+        for i in range((winCondition - 1), dim):
+            for j in range((winCondition - 1), dim):
+                winConditionCount = (winCondition - 1)
+                sequenceBroken = False
+                while not sequenceBroken and winConditionCount >= 0:
+                    if current_board[i][j] == current_board[i - winConditionCount][j - winConditionCount]:
+                        winConditionCount -= 1
+                    else:
+                        sequenceBroken = True
 
-        # checks other diagonals
-        i = 4
-        while i < board_size:
-            j = 4
-            while j < board_size:
-                if current_board[i][j] == current_board[i - 1][j - 1] == current_board[i - 2][j - 2] == \
-                        current_board[i - 3][j - 3] == current_board[i - 4][j - 4]:
+                if not sequenceBroken:
                     winner = current_board[i][j]
-                    winner_found = True
+                    win_found = True
 
-                j += 1
-            i += 1
+        break
+
+    if not win_found:
         draw_found = True
-        for i in range(len(current_board)):
-            for j in range(len(current_board)):
+        for i in range(dim):
+            for j in range(dim):
                 if current_board[i][j] != 'X' and current_board[i][j] != 'O':
                     draw_found = False
+                    break
+
         if draw_found:
-            winner = 0
-            return True, winner, []
+            return True, 0, []
 
-        winner_found = True
+    if winner == 'X':
+        return True, 1, []
+    elif winner == 'O':
+        return True, -1, []
 
-    if winner == "X":
-        winner = 1
-        return True, winner, []
-    elif winner == "O":
-        winner = -1
-        return True, winner, []
-
-    winner = 2
-    return False, winner, []
+    return False, 2, []
 
 
 def rollout(state):
@@ -182,7 +202,7 @@ def rollout(state):
 def MCR_player(state):
 
     turn = state[1]
-    n = random.randint(1, 10)  # performs n many rollouts
+    n = random.randint(1, 20)  # performs n many rollouts
     # print("n: " + str(n))
     rolloutSim = rollout(state)  # first rollout
 

@@ -79,9 +79,10 @@ def render_board(board, X_IMG, O_IMG):
 
 
 def add_XO(board, graphical_board, to_move):
+
     current_pos = pygame.mouse.get_pos()
-    converted_x = round((current_pos[0] - 121) / distanceBtwRows)  # muck about with these values
-    converted_y = round((current_pos[1] - 121) / distanceBtwRows)
+    converted_x = round((current_pos[0] - 97.5) // distanceBtwRows)  # muck about with these values
+    converted_y = round((current_pos[1] - 97.5) // distanceBtwRows)
 
     if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0:
 
@@ -245,8 +246,8 @@ def game_loop():
 
                 pygame.display.update()
                 if game_finished == False and to_move == "O":
-                    #board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
-                    board, to_move = add_XO(board, graphical_board, to_move)
+                    board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
+                    #board, to_move = add_XO(board, graphical_board, to_move)
                     if game_finished:
                         reset_board()
 
