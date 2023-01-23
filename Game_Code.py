@@ -6,6 +6,7 @@ from initialise import *
 
 pygame.init()
 
+
 def get_board_size():
     return board_size
 
@@ -32,7 +33,6 @@ def redraw():
 
 
 def reset_board():
-
     global graphical_board, board, to_move, game_finished
 
     # board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
@@ -79,19 +79,52 @@ def render_board(board, X_IMG, O_IMG):
 
 
 def add_XO(board, graphical_board, to_move):
+    if to_move == humanTurn and not game_finished:
+        action = humanAction()
+        if action is not None:
+            board, to_move = addPiece(action, board, graphical_board)
 
+    elif to_move == computerTurn and not game_finished:
+        action = computerAction(board)
+        board, to_move = addPiece(action, board, graphical_board)
+
+    return board, to_move
+
+
+def humanAction():
     current_pos = pygame.mouse.get_pos()
     converted_x = round((current_pos[0] - 97.5) // distanceBtwRows)  # muck about with these values
     converted_y = round((current_pos[1] - 97.5) // distanceBtwRows)
 
     if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0:
+        action = [[converted_x, converted_y], humanTurn]
+    else:
+        action = None  # incase the human clicks somewhere not allowed
 
-        if board[converted_y][converted_x] != 'O' and board[converted_y][converted_x] != 'X':
-            board[converted_y][converted_x] = to_move
-            if to_move == 'X':
-                to_move = 'O'
-            else:
-                to_move = 'X'
+    return action
+
+
+def computerAction(board):
+
+    action = AI_Code.add_XO_AI(board, to_move)
+
+    return action
+
+
+def addPiece(action, board, graphical_board):
+    # action = [[12,3],"X"] e.g [[x,y], to_move]
+    print("actoin:: " + str(action))
+    x = action[0][0]
+    y = action[0][1]
+    turn = action[1]
+    to_move = turn
+
+    if board[y][x] != 'O' and board[y][x] != 'X':
+        board[y][x] = turn
+        if turn == "X":
+            to_move = "O"
+        else:
+            to_move = "X"
 
         render_board(board, X_IMG, O_IMG)
 
@@ -100,10 +133,10 @@ def add_XO(board, graphical_board, to_move):
                 if graphical_board[i][j][0] is not None:
                     SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
 
-    return board, to_move
+        return board, to_move
+
 
 def check_win_2(current_board):
-
     dim = board_size
     dum = dim - (winCondition - 1)
     win_found = False
@@ -196,7 +229,8 @@ def check_win_2(current_board):
         if win_type == "horizontal":
             while winConditionCount >= 0:
                 graphical_board[i][j + winConditionCount][0] = winner_IMG
-                SCREEN.blit(graphical_board[i][j + winConditionCount][0], graphical_board[i][j + winConditionCount][1])#
+                SCREEN.blit(graphical_board[i][j + winConditionCount][0],
+                            graphical_board[i][j + winConditionCount][1])  #
                 winConditionCount -= 1
 
         winConditionCount = winCondition - 1
@@ -210,14 +244,16 @@ def check_win_2(current_board):
         if win_type == "diagonals":
             while winConditionCount >= 0:
                 graphical_board[i - winConditionCount][j + winConditionCount][0] = winner_IMG
-                SCREEN.blit(graphical_board[i - winConditionCount][j + winConditionCount][0], graphical_board[i - winConditionCount][j + winConditionCount][1])
+                SCREEN.blit(graphical_board[i - winConditionCount][j + winConditionCount][0],
+                            graphical_board[i - winConditionCount][j + winConditionCount][1])
                 winConditionCount -= 1
 
         winConditionCount = winCondition - 1
         if win_type == "other diagonals":
             while winConditionCount >= 0:
                 graphical_board[i - winConditionCount][j - winConditionCount][0] = winner_IMG
-                SCREEN.blit(graphical_board[i - winConditionCount][j - winConditionCount][0], graphical_board[i - winConditionCount][j - winConditionCount][1])
+                SCREEN.blit(graphical_board[i - winConditionCount][j - winConditionCount][0],
+                            graphical_board[i - winConditionCount][j - winConditionCount][1])
                 winConditionCount -= 1
 
         pygame.display.update()
@@ -245,9 +281,11 @@ def game_loop():
                     game_finished = True
 
                 pygame.display.update()
-                if game_finished == False and to_move == "O":
-                    board, to_move = AI_Code.add_XO_AI(board, graphical_board, to_move, X_IMG, O_IMG, SCREEN, board_size)
-                    #board, to_move = add_XO(board, graphical_board, to_move)
+
+                if game_finished == False and to_move == computerTurn:
+
+                    board, to_move = add_XO(board, graphical_board, to_move)
+
                     if game_finished:
                         reset_board()
 
