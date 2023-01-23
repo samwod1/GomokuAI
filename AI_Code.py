@@ -29,6 +29,49 @@ def result(state, action):
    # print("state: " + str(state))
     return s
 
+def successors(state):
+    to_move = state[1]
+
+    if to_move == 1:
+        to_move = 'X'
+    else:
+        to_move = 'O'
+
+    if to_move == 'X':
+        to_move_num = 0
+    else:
+        to_move_num = 1
+
+    current_board = state[0]
+    res = []
+
+    for i in range(board_size):
+        for j in range(board_size):
+           # print("current board: " + str(current_board))
+            next_state = copy.deepcopy(current_board)
+           # print("next state: " + str(next_state))
+            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
+                next_state[i][j] = to_move
+                res.append([next_state, to_move_num])
+  #  print(res)
+
+    return res
+
+
+def calcUCB(node):
+    global tree
+    C = 2
+    # if empty node make it inf else apply UCB1 formula
+    if tree[str(node)][1] == 0 and tree[str(node)][2] == 0:
+        UCB = math1.inf
+    else:
+        # apply UCB
+        UCB = int(tree[str(node)][1]) + C * math1.sqrt((math1.log(int(tree[str(tree[str(node)][0])][2]) / int(tree[str(node)][2]))))
+
+    print("calcUCB: " + str(UCB))
+    return UCB
+
+
 
 def getActions(state):
     to_move = state[1]
@@ -203,6 +246,7 @@ def AI_Player_minimax(state):
 
 
 def state_conversion(current_board, to_move):
+
     if to_move == "X":
         state = [current_board, 'X']
     else:
