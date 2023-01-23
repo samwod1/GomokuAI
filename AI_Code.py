@@ -1,99 +1,128 @@
+#returns the best possible action to do with that board
 import copy
-import math as math1
-import random
-import time as timer
-
-import pygame
-import Game_Code
+import timer
 import initialise
+import math as math1
 
-board_size = initialise.board_size
-winCondition = initialise.winCondition
-computerTurn = initialise.computerTurn
+tree = {}
+og_state = copy.deepcopy(initialise.board)
+board_size = copy.deepcopy(initialise.board_size)
+def add_XO_AI(board, to_move):
+    cboard = copy.deepcopy(board)
+    state = state_conversion(cboard, to_move)
 
+    action = MCTSPlayer(state)
 
-def result(state, action):
-    s = copy.deepcopy(state)
-    x = action[0][0]
-    y = action[0][1]
-    turn = copy.deepcopy(action[1])
+    return action
 
-    s[0][y][x] = turn
-
-    if turn == 'X':
-        turn = 'O'
-    else:
-        turn = 'X'
-
-    s[1] = turn
-   # print("state: " + str(state))
-    return s
-
-def successors(state):
-    to_move = state[1]
-
-    if to_move == 1:
-        to_move = 'X'
-    else:
-        to_move = 'O'
-
+def state_conversion(board, to_move):
     if to_move == 'X':
-        to_move_num = 0
+        return [board, 1]
     else:
-        to_move_num = 1
-
-    current_board = state[0]
-    res = []
-
-    for i in range(board_size):
-        for j in range(board_size):
-           # print("current board: " + str(current_board))
-            next_state = copy.deepcopy(current_board)
-           # print("next state: " + str(next_state))
-            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-                next_state[i][j] = to_move
-                res.append([next_state, to_move_num])
-  #  print(res)
-
-    return res
+        return [board, 0]
 
 
-def calcUCB(node):
+def MCTSPlayer(state):
+
+    print("Starting MCTS")
+    start = timer.time()
+    action = MCTS(state)
+    end = timer.time()
+    duration = end-start
+    print("")
+    print("AI player moved to state: " + str(action))
+    print("In time: " + str(duration))
+
+    return action
+
+def MCTS(state):
+
+    tree[str(state)] = ["start", 0, 0] #initial tree node (parent, value, visits)
+
+    iterations = 0
+    while iterations < 10:
+        traverse_and_expand(copy.deepcopy(state))
+        iterations += 1
+
+    succ = successors(copy.deepcopy(state))
+
+
+
+def traverse_and_expand(state):
     global tree
-    C = 2
-    # if empty node make it inf else apply UCB1 formula
-    if tree[str(node)][1] == 0 and tree[str(node)][2] == 0:
-        UCB = math1.inf
+    current = state.copy()
+    maxUCB = -1 * math1.inf
+
+    while not isLeaf(state):
+        succ = successors(current)
+
+        for s in succ:
+            #add successors to the tree
+            tree[str(s)] = [str(current), 0, 0]
+            #calcuate ucb for successor
+            UCB = calcUCB(s)
+            if UCB > maxUCB:
+                maxUCB = UCB
+                UCBNode = copy.deepcopy(s)
+
+        current = UCBNode
+
+    if tree[str(current)][2] == 0:
+        value = MCR_Player(copy.deepcopy(current))[0]
+
+def MCR_player(state):
+
+    turn = state[1]
+    n = random.randint(1, 20)  # performs n many rollouts
+    # print("n: " + str(n))
+    rolloutSim = rollout(state)  # first rollout
+
+    for i in range(n):
+        nextRollout = rollout(state)
+        if rolloutSim[0] > nextRollout[0] and turn == 1:
+            rolloutSim = nextRollout
+        elif rolloutSim[0] < nextRollout[0] and turn == 0:
+            rolloutSim = nextRollout
+
+    # print("rolloutSim" + str(rolloutSim))
+
+    if len(rolloutSim[1]) == 0:
+        return rolloutSim[0], [state]
     else:
-        # apply UCB
-        UCB = int(tree[str(node)][1]) + C * math1.sqrt((math1.log(int(tree[str(tree[str(node)][0])][2]) / int(tree[str(node)][2]))))
+        return rolloutSim[0], rolloutSim[1][0]
 
-    print("calcUCB: " + str(UCB))
-    return UCB
+def rollout(state):
+    bestPath = []
+    while True:
+       # print(state)
+        terminal, utility, path = terminal_test(state)
+        if terminal:
+            return utility, bestPath
+        else:
+            succ = successors(state)
+            index = random.randint(0, len(succ) - 1)
+            state = succ[index]
+            bestPath.append(state)
 
 
 
-def getActions(state):
-    to_move = state[1]
-    actions = []
 
-    next_state = state[0]
-
-    for i in range(board_size):
-        for j in range(board_size):
-            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-               # next_state[i][j] = to_move
-                actions.append([[j, i], to_move])  # [[x, y], to_move]
-
-    #print("actions!!: " + str(actions))
-
-    return actions
-
+def isLeaf(state):
+    global tree
+    leafBool = True
+    treeValues = tuple(tree.values())
+    #  print("treeValues: " + str(treeValues))
+    for i in range(len(treeValues)):
+        if treeValues[i][0] == state:
+            leafBool = False and leafBool
+        else:
+            leafBool = True and leafBool
+    return leafBool
 
 def terminal_test(state):
 
     global board_size, winCondition
-    current_board = (state[0])
+    current_board = state[0]
     dim = board_size
     dum = dim - (winCondition - 1)
 
@@ -169,96 +198,56 @@ def terminal_test(state):
         if draw_found:
             return True, 0, []
 
-    if winner == 'O':
+    if winner == 'X':
         return True, 1, []
-    elif winner == 'X':
+    elif winner == 'O':
         return True, -1, []
 
     return False, 2, []
 
 
-def minValue(state):
-    print("  ")
-    print("<<<<<<< MIN VALUE >>>>>>>")
-    print(" ")
-    fin, utility, path = terminal_test(state)
+def successors(state):
+    to_move = state[1]
 
-    if fin:
-        print("returning utlity: " + str(utility) + " on state: " + str(state))
-        return utility
-
+    if to_move == 1:
+        to_move = 'X'
     else:
+        to_move = 'O'
 
-        v = math1.inf
-        actions = getActions(state)
-        print("looping through actions on state: " + str(state))
-        for a in actions:
-            r = result(state, a)
-            print("got result: " + str(r) + " from action: " + str(a))
-            v = min(v, maxValue(r))
-        return v
-
-def maxValue(state):
-    print("  ")
-    print("<<<<<<< MAX VALUE >>>>>>>")
-    print(" ")
-
-    fin, utility, path = terminal_test(state)
-
-    if fin:
-        print("returning utlity: " + str(utility) + " on state: " + str(state))
-        return utility
+    if to_move == 'X':
+        to_move_num = 0
     else:
-        v = -1 * math1.inf
-        actions = getActions(state)
-        print("looping through actions on state: " + str(state))
-        for a in actions:
-            r = result(state, a)
-            print("got result: " + str(r) + " from action: " + str(a))
-            v = max(v, minValue(r))
-        return v
-    # rollout function
+        to_move_num = 1
 
-def minimax(state):
-    actions = getActions(state)
+    current_board = state[0]
+    res = []
 
-    bestActionUtility = -1 * math1.inf
-    bestAction = None
+    for i in range(board_size):
+        for j in range(board_size):
+            next_state = copy.deepcopy(current_board)
+            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
+                next_state[i][j] = to_move
+                res.append([next_state, to_move_num])
 
-    for a in actions:
-        r = result(state, a)
-        minimum = minValue(r)
-        if minimum > bestActionUtility:
-            bestAction = a
-            bestActionUtility = minimum
-
-    return bestAction
-
-def AI_Player_minimax(state):
-    start = timer.time()
-    bestAction = minimax(state)
-    end = timer.time()
-    duration = end-start
-    print("")
-    print("AI player moved to state " + str(bestAction))
-    print("Time taken: " + str(duration))
-    return bestAction
+    return res
 
 
-def state_conversion(current_board, to_move):
-
-    if to_move == "X":
-        state = [current_board, 'X']
+def calcUCB(state):
+    C = 2
+    # if empty node make it inf else apply UCB1 formula
+    if tree[str(state)][1] == 0 and tree[str(state)][2] == 0:
+        UCB = math1.inf
     else:
-        state = [current_board, 'O']
+        # apply UCB, made first parameter negative
+        UCB = -(int(tree[str(state)][1])) + C * math1.sqrt((math1.log(int(tree[str(tree[str(state)][0])][2]) / int(tree[str(state)][2]))))
 
-    return state
+    print("calcUCB: " + str(UCB))
+    return UCB
 
 
-def add_XO_AI(current_board, to_move):
-    cbord = copy.deepcopy(current_board)
-    state = state_conversion(cbord, to_move)
 
-    action = AI_Player_minimax(state)
-    print(getActions([[[1, 2, 'X'], [4, 'O', 6], ['O', 'X', 'O']], 'O']))
-    return action
+
+
+
+
+
