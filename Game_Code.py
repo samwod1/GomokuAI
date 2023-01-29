@@ -97,7 +97,8 @@ def humanAction():
     converted_x = round((current_pos[0] - 97.5) // distanceBtwRows)  # muck about with these values
     converted_y = round((current_pos[1] - 97.5) // distanceBtwRows)
 
-    if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0:
+    if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0\
+          and board[converted_y][converted_x] != 'X' and board[converted_y][converted_x] != 'O':
         action = [[converted_x, converted_y], humanTurn]
     else:
         action = None  # incase the human clicks somewhere not allowed

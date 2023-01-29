@@ -7,50 +7,81 @@ import pygame
 import Game_Code
 import initialise
 
+tree = {}
 board_size = initialise.board_size
+init_board = initialise.board
 winCondition = initialise.winCondition
-computerTurn = initialise.computerTurn
 
 
-def result(state, action):
+def MCTS(state):
+    global tree
+    #tree.clear()
+    og_state = [init_board, state[1]]
+
+    # store intitial state, storing total number of nodes and times visited
+    tree[str(og_state)] = ['start', 0, 0]  # dict to store node info: parent, t, n
+
+    # add first node
+    tree[str(state)] = [og_state, 0, 0]
+
+    # set a timeout
+    depth = 3
+    iterations = 0
+    # Run MCTS
+    while iterations < 1000:
+        traverse_and_expand(state, depth)
+        iterations += 1
+
+
+    # checks if the tree is empty
+    print("tree: " + str(tree))
+    # At end of loop identify successors
+    succ = successors(state)
+
+    # Apply UCB formula to all successors
+    maxValue = -math1.inf
+    bestNextState = succ[0]
+    for s in succ:
+        thisValue = tree[str(s)][1]
+        if thisValue > maxValue:
+            maxValue = thisValue
+            bestNextState = s
+    return bestNextState
+
+
+def successors(state):
     s = copy.deepcopy(state)
-    x = action[0][0]
-    y = action[0][1]
-    turn = copy.deepcopy(action[1])
+    to_move = s[1]
 
-    s[0][y][x] = turn
-
-    if turn == 'X':
-        turn = 'O'
+    if to_move == 1:
+        to_move = 'X'
     else:
-        turn = 'X'
+        to_move = 'O'
 
-    s[1] = turn
-   # print("state: " + str(state))
-    return s
+    if to_move == 'X':
+        to_move_num = 0
+    else:
+        to_move_num = 1
 
-
-def getActions(state):
-    to_move = state[1]
-    actions = []
-
-    next_state = state[0]
+    current_board = s[0]
+    res = []
 
     for i in range(board_size):
         for j in range(board_size):
+            # print("current board: " + str(current_board))
+            next_state = copy.deepcopy(current_board)
+            # print("next state: " + str(next_state))
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-               # next_state[i][j] = to_move
-                actions.append([[j, i], to_move])  # [[x, y], to_move]
+                next_state[i][j] = to_move
+                res.append([next_state, to_move_num])
+    #  print(res)
 
-    #print("actions!!: " + str(actions))
-
-    return actions
+    return res
 
 
 def terminal_test(state):
-
     global board_size, winCondition
-    current_board = (state[0])
+    current_board = state[0]
     dim = board_size
     dum = dim - (winCondition - 1)
 
@@ -126,95 +157,160 @@ def terminal_test(state):
         if draw_found:
             return True, 0, []
 
-    if winner == 'O':
-        return True, 1, []
-    elif winner == 'X':
+    if winner == 'X':
         return True, -1, []
+    elif winner == 'O':
+        return True, 1, []
 
     return False, 2, []
 
 
-def minValue(state):
-    print("  ")
-    print("<<<<<<< MIN VALUE >>>>>>>")
-    print(" ")
-    fin, utility, path = terminal_test(state)
+def rollout(state):
+    bestPath = []
+    while True:
+        # print(state)
+        terminal, utility, path = terminal_test(state)
+        if terminal:
+            return utility, bestPath
+        else:
+            succ = successors(state)
+            index = random.randint(0, len(succ) - 1)
+            state = succ[index]
+            bestPath.append(state)
 
-    if fin:
-        print("returning utlity: " + str(utility) + " on state: " + str(state))
-        return utility
 
+# rollout function
+def MCR_player(state):
+    s = copy.deepcopy(state)
+    turn = s[1]
+    print("turn: " + str(turn))
+    print("state: " + str(state))
+    n = 10  # performs n many rollouts
+    # print("n: " + str(n))
+    rolloutSim = rollout(s)  # first rollout
+
+    for i in range(n):
+        nextRollout = rollout(s)
+        print("rolloutSim: " + str(rolloutSim[0]))
+        print("nextRollout: " + str(nextRollout[0]))
+        print("turn: " + str(turn))
+        if rolloutSim[0] < nextRollout[0] and turn == 0:
+            print("changing Rollout!! O")
+            rolloutSim = nextRollout
+        # elif rolloutSim[0] > nextRollout[0] and turn == 1:
+        #     print("changing Rollout!! O")
+        #     rolloutSim = nextRollout
+
+    # print("rolloutSim" + str(rolloutSim))
+
+    if len(rolloutSim[1]) == 0:
+        return rolloutSim[0], [state]
     else:
+        return rolloutSim[0], rolloutSim[1][0]
 
-        v = math1.inf
-        actions = getActions(state)
-        print("looping through actions on state: " + str(state))
-        for a in actions:
-            r = result(state, a)
-            print("got result: " + str(r) + " from action: " + str(a))
-            v = min(v, maxValue(r))
-        return v
 
-def maxValue(state):
-    print("  ")
-    print("<<<<<<< MAX VALUE >>>>>>>")
-    print(" ")
+def backpropagate(node, rolloutValue):
+    global tree
+    current = node
+    while tree[str(current)][0] != "start":
+        tree[str(current)] = [tree[str(current)][0], int(tree[str(current)][1]) + int(rolloutValue),
+                              int(tree[str(current)][2]) + 1]
+        print("Backpropogating: " + str([tree[str(current)]]))
+        current = tree[str(current)][0]  # current becomes parent node
 
-    fin, utility, path = terminal_test(state)
 
-    if fin:
-        print("returning utlity: " + str(utility) + " on state: " + str(state))
-        return utility
-    else:
-        v = -1 * math1.inf
-        actions = getActions(state)
-        print("looping through actions on state: " + str(state))
-        for a in actions:
-            r = result(state, a)
-            print("got result: " + str(r) + " from action: " + str(a))
-            v = max(v, minValue(r))
-        return v
-    # rollout function
+def isLeaf(node):
+    # check if there is a successor state
+    global tree
+    leafBool = True
+    treeValues = tuple(tree.values())
+    #  print("treeValues: " + str(treeValues))
+    for i in range(len(treeValues)):
+        if treeValues[i][0] == node:
+            leafBool = False and leafBool
+        else:
+            leafBool = True and leafBool
+    return leafBool
 
-def minimax(state):
-    actions = getActions(state)
 
-    bestActionUtility = -1 * math1.inf
-    bestAction = None
+def traverse_and_expand(node, maxDepth):
+    # Function to travel the tree and expand it
+    global tree
+    current = copy.deepcopy(node)
+    leastVisits = math1.inf
+    depth = 0
+    # while current node isn't a leaf node
+    while depth <= maxDepth:
+        # Generate successors
+        succ = successors(copy.deepcopy(current))
+        for s in succ:
 
-    for a in actions:
-        r = result(state, a)
-        minimum = minValue(r)
-        if minimum > bestActionUtility:
-            bestAction = a
-            bestActionUtility = minimum
+            if tree.get(str(s)) is None:
+                tree[str(s)] = [str(current), 0, 0]
 
-    return bestAction
+            if tree[str(s)][2] < leastVisits:
+                leastVisits = tree[str(s)][2]
+                bestNode = copy.deepcopy(s)
 
-def AI_Player_minimax(state):
+        depth = depth + 1
+        current = copy.deepcopy(bestNode)
+
+    # rollout from current
+    value = MCR_player(copy.deepcopy(current))[0]
+    backpropagate(copy.deepcopy(current), value)
+
+    return
+
+
+def AI_Player_mcts(state):
     start = timer.time()
-    bestAction = minimax(state)
+    game_state = MCTS(state)
     end = timer.time()
-    duration = end-start
+    duration = end - start
     print("")
-    print("AI player moved to state " + str(bestAction))
+    print("AI player moved to state " + str(game_state))
     print("Time taken: " + str(duration))
-    return bestAction
+    return game_state
 
 
 def state_conversion(current_board, to_move):
-    if to_move == "X":
-        state = [current_board, 'X']
+    print(to_move)
+    if to_move == "X" or to_move == 1:
+        state = [current_board, 1]
     else:
-        state = [current_board, 'O']
+        state = [current_board, 0]
 
     return state
+
+
+def stateToAction(init_state, bestState):
+    x_pos = -1
+    y_pos = -1
+    if bestState[1] == 1:
+        turn = 'O'
+    else:
+        turn = 'X'
+    action = None
+
+    for i in range(board_size):
+        y_pos = y_pos + 1
+        for j in range(board_size):
+            x_pos = x_pos + 1
+            if init_state[i][j] != bestState[0][i][j]:
+                action = [[j, i], turn]
+                break
+
+    return action
 
 
 def add_XO_AI(current_board, to_move):
     cbord = copy.deepcopy(current_board)
     state = state_conversion(cbord, to_move)
 
-    action = AI_Player_minimax(state)
-    print(getActions([[[1, 2, 'X'], [4, 'O', 6], ['O', 'X', 'O']], 'O']))
-    return action
+    state = AI_Player_mcts(state)
+
+    action = stateToAction(cbord, state)
+    if action is not None:
+        return action
+    else:
+        return [[]]
