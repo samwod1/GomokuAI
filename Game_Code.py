@@ -79,6 +79,7 @@ def render_board(board, X_IMG, O_IMG):
 
 
 def add_XO(board, graphical_board, to_move):
+
     if to_move == humanTurn and not game_finished:
         action = humanAction()
         if action is not None:
