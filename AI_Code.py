@@ -22,7 +22,11 @@ def MCTS(state):
     tree[str(og_state)] = ['start', 0, 0]  # dict to store node info: parent, t, n
 
     # add first node
-    tree[str(state)] = [og_state, 0, 0]
+    if str(state) == str(og_state):
+        succ = successors(state)[0]
+        tree[str(succ)] = [og_state, 0, 0]
+    else:
+        tree[str(state)] = [og_state, 0, 0]
 
     # set a timeout
     depth = 3

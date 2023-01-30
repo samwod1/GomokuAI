@@ -33,7 +33,7 @@ def redraw():
 
 
 def reset_board():
-    global graphical_board, board, to_move, game_finished
+    global graphical_board, board, to_move, game_finished, move_first
 
     # board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
     #          list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
@@ -54,7 +54,8 @@ def reset_board():
         for j in range(board_size):
             graphical_board[i].append([None, None])
 
-    to_move = 'X'
+    to_move = 'O'
+    move_first = 'O'
 
     SCREEN.fill(BG_COLOR)
     pygame.display.flip()
@@ -264,13 +265,26 @@ def check_win_2(current_board):
 
 
 def game_loop():
-    global board, board_size, graphical_board, to_move, game_finished
+    global board, board_size, graphical_board, to_move, game_finished, move_first
     while True:
         for event in pygame.event.get():
             pygame.display.update()
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+            if move_first == computerTurn and to_move == computerTurn:
+                move_first = None
+                board, to_move = add_XO(board, graphical_board, to_move)
+
+                if game_finished:
+                    reset_board()
+
+                if check_win_2(board) is not None:
+                    game_finished = True
+
+                pygame.display.update()
+
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
