@@ -15,7 +15,7 @@ winCondition = initialise.winCondition
 
 def MCTS(state):
     global tree
-    #tree.clear()
+    tree.clear()
     og_state = [init_board, state[1]]
 
     # store intitial state, storing total number of nodes and times visited
@@ -32,7 +32,7 @@ def MCTS(state):
     depth = 3
     iterations = 0
     # Run MCTS
-    while iterations < 1000:
+    while iterations < 1500:
         traverse_and_expand(state, depth)
         iterations += 1
 
@@ -189,7 +189,7 @@ def MCR_player(state):
     turn = s[1]
     print("turn: " + str(turn))
     print("state: " + str(state))
-    n = 10  # performs n many rollouts
+    n = 50  # performs n many rollouts
     # print("n: " + str(n))
     rolloutSim = rollout(s)  # first rollout
 

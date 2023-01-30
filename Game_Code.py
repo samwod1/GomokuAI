@@ -1,7 +1,5 @@
 import sys
-import pygame
 import AI_Code
-import initialise
 from initialise import *
 
 pygame.init()
@@ -54,8 +52,8 @@ def reset_board():
         for j in range(board_size):
             graphical_board[i].append([None, None])
 
-    to_move = 'O'
-    move_first = 'O'
+    to_move = 'X'
+    move_first = 'x'
 
     SCREEN.fill(BG_COLOR)
     pygame.display.flip()
