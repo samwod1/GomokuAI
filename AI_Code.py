@@ -134,7 +134,7 @@ def terminal_test(state):
     return False, 2, []
 
 
-def minValue(state):
+def minValue(state, alpha, beta):
     print("  ")
     print("<<<<<<< MIN VALUE >>>>>>>")
     print(" ")
@@ -152,10 +152,14 @@ def minValue(state):
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = min(v, maxValue(r))
+            v = min(v, maxValue(r, alpha, beta))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
         return v
 
-def maxValue(state):
+
+def maxValue(state, alpha, beta):
     print("  ")
     print("<<<<<<< MAX VALUE >>>>>>>")
     print(" ")
@@ -172,11 +176,18 @@ def maxValue(state):
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = max(v, minValue(r))
+            v = max(v, minValue(r, alpha, beta))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
         return v
     # rollout function
 
+
 def minimax(state):
+    alpha = -math1.inf
+    beta = math1.inf
+
     actions = getActions(state)
 
     bestActionUtility = -1 * math1.inf
@@ -184,12 +195,13 @@ def minimax(state):
 
     for a in actions:
         r = result(state, a)
-        minimum = minValue(r)
+        minimum = minValue(r, alpha, beta)
         if minimum > bestActionUtility:
             bestAction = a
             bestActionUtility = minimum
 
     return bestAction
+
 
 def AI_Player_minimax(state):
     start = timer.time()
