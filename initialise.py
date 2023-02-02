@@ -49,24 +49,3 @@ winCondition = 3
 humanTurn = 'X'
 computerTurn = 'O'
 move_first = 'O'
-
-
-# def reset_board_variable():
-#     board = []
-#     count = 0
-#     for i in range(board_size * board_size):
-#         count += 1
-#         board.append(count)
-#
-#     count = 0
-#     for i in range(board_size * board_size):
-#
-#
-#
-#     print(board)
-#     print(board_size * board_size)
-
-  #  return board
-
-
-#board = reset_board_variable()

@@ -1,10 +1,7 @@
 import copy
 import math as math1
-import random
 import time as timer
 
-import pygame
-import Game_Code
 import initialise
 
 board_size = initialise.board_size
@@ -26,7 +23,7 @@ def result(state, action):
         turn = 'X'
 
     s[1] = turn
-   # print("state: " + str(state))
+    # print("state: " + str(state))
     return s
 
 
@@ -39,16 +36,15 @@ def getActions(state):
     for i in range(board_size):
         for j in range(board_size):
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-               # next_state[i][j] = to_move
+                # next_state[i][j] = to_move
                 actions.append([[j, i], to_move])  # [[x, y], to_move]
 
-    #print("actions!!: " + str(actions))
+    # print("actions!!: " + str(actions))
 
     return actions
 
 
 def terminal_test(state):
-
     global board_size, winCondition
     current_board = (state[0])
     dim = board_size
@@ -207,7 +203,7 @@ def AI_Player_minimax(state):
     start = timer.time()
     bestAction = minimax(state)
     end = timer.time()
-    duration = end-start
+    duration = end - start
     print("")
     print("AI player moved to state " + str(bestAction))
     print("Time taken: " + str(duration))
