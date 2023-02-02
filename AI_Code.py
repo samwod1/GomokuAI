@@ -7,49 +7,15 @@ import pygame
 import Game_Code
 import initialise
 
-tree = {}
 board_size = initialise.board_size
 init_board = initialise.board
 winCondition = initialise.winCondition
 
 
 def MCTS(state):
-    global tree
-    tree.clear()
-    og_state = [init_board, state[1]]
-
-    # store intitial state, storing total number of nodes and times visited
-    tree[str(og_state)] = ['start', 0, 0]  # dict to store node info: parent, t, n
-
-    # add first node
-    if str(state) == str(og_state):
-        succ = successors(state)[0]
-        tree[str(succ)] = [og_state, 0, 0]
-    else:
-        tree[str(state)] = [og_state, 0, 0]
-
-    # set a timeout
-    depth = 3
-    iterations = 0
-    # Run MCTS
-    while iterations < 1500:
-        traverse_and_expand(state, depth)
-        iterations += 1
-
-
-    # checks if the tree is empty
-    print("tree: " + str(tree))
-    # At end of loop identify successors
-    succ = successors(state)
-
-    # Apply UCB formula to all successors
-    maxValue = -math1.inf
-    bestNextState = succ[0]
-    for s in succ:
-        thisValue = tree[str(s)][1]
-        if thisValue > maxValue:
-            maxValue = thisValue
-            bestNextState = s
+    print("FIRST STATE: " + str(state))
+    s = copy.deepcopy(state)
+    bestNextState = traverse_and_expand(s)
     return bestNextState
 
 
@@ -170,100 +136,64 @@ def terminal_test(state):
 
 
 def rollout(state):
-    bestPath = []
+    s = copy.deepcopy(state)
     while True:
-        # print(state)
-        terminal, utility, path = terminal_test(state)
+        terminal, utility, path = terminal_test(s)
         if terminal:
-            return utility, bestPath
+            return utility
         else:
-            succ = successors(state)
+            succ = successors(s)
             index = random.randint(0, len(succ) - 1)
-            state = succ[index]
-            bestPath.append(state)
+            s = succ[index]
 
 
 # rollout function
 def MCR_player(state):
+    print("state: " + str(state))
     s = copy.deepcopy(state)
     turn = s[1]
-    print("turn: " + str(turn))
-    print("state: " + str(state))
-    n = 50  # performs n many rollouts
-    # print("n: " + str(n))
+    n = 100  # performs n many rollouts
     rolloutSim = rollout(s)  # first rollout
-
+    rolloutValue = 0
     for i in range(n):
         nextRollout = rollout(s)
-        print("rolloutSim: " + str(rolloutSim[0]))
-        print("nextRollout: " + str(nextRollout[0]))
-        print("turn: " + str(turn))
-        if rolloutSim[0] < nextRollout[0] and turn == 0:
-            print("changing Rollout!! O")
-            rolloutSim = nextRollout
-        # elif rolloutSim[0] > nextRollout[0] and turn == 1:
-        #     print("changing Rollout!! O")
-        #     rolloutSim = nextRollout
+        if nextRollout == -1:
+            print("rollout Black wins")
+        elif nextRollout == 1:
+            print("rollout White wins")
+        elif nextRollout == 0:
+            print("rollout draw")
+        rolloutValue = rolloutValue + nextRollout
 
-    # print("rolloutSim" + str(rolloutSim))
+    # for i in range(n):
+    #     nextRollout = rollout(s)
+    #     print("nextRollout: " + str(nextRollout))
+    #     print("rolloutSim: " + str(rolloutSim))
+    #     if rolloutSim < nextRollout and turn == 0:
+    #         print("switching, rolloutSim: " + str(rolloutSim) + " nextRollout: " + str(nextRollout) + " on turn: " + str(turn))
+    #         rolloutSim = nextRollout
+    #     elif rolloutSim > nextRollout and turn == 1:
+    #         print("switching, rolloutSim: " + str(rolloutSim) + " nextRollout: " + str(nextRollout) + " on turn: " + str(turn))
+    #         rolloutSim = nextRollout
+    #     else:
+    #         print("no switching")
 
-    if len(rolloutSim[1]) == 0:
-        return rolloutSim[0], [state]
-    else:
-        return rolloutSim[0], rolloutSim[1][0]
+    return rolloutValue
 
-
-def backpropagate(node, rolloutValue):
-    global tree
-    current = node
-    while tree[str(current)][0] != "start":
-        tree[str(current)] = [tree[str(current)][0], int(tree[str(current)][1]) + int(rolloutValue),
-                              int(tree[str(current)][2]) + 1]
-        print("Backpropogating: " + str([tree[str(current)]]))
-        current = tree[str(current)][0]  # current becomes parent node
-
-
-def isLeaf(node):
-    # check if there is a successor state
-    global tree
-    leafBool = True
-    treeValues = tuple(tree.values())
-    #  print("treeValues: " + str(treeValues))
-    for i in range(len(treeValues)):
-        if treeValues[i][0] == node:
-            leafBool = False and leafBool
-        else:
-            leafBool = True and leafBool
-    return leafBool
-
-
-def traverse_and_expand(node, maxDepth):
-    # Function to travel the tree and expand it
-    global tree
+def traverse_and_expand(node):
+    #gets all the successors of the node and rollouts out through them all
     current = copy.deepcopy(node)
-    leastVisits = math1.inf
-    depth = 0
-    # while current node isn't a leaf node
-    while depth <= maxDepth:
-        # Generate successors
-        succ = successors(copy.deepcopy(current))
-        for s in succ:
+    succ = successors(current)
+    bestState = None
+    maxValue = -math1.inf
+    for s in succ:
+        rolloutValue = MCR_player(s)
+        if rolloutValue > maxValue:
+            maxValue = rolloutValue
+            bestState = copy.deepcopy(s)
 
-            if tree.get(str(s)) is None:
-                tree[str(s)] = [str(current), 0, 0]
 
-            if tree[str(s)][2] < leastVisits:
-                leastVisits = tree[str(s)][2]
-                bestNode = copy.deepcopy(s)
-
-        depth = depth + 1
-        current = copy.deepcopy(bestNode)
-
-    # rollout from current
-    value = MCR_player(copy.deepcopy(current))[0]
-    backpropagate(copy.deepcopy(current), value)
-
-    return
+    return bestState
 
 
 def AI_Player_mcts(state):
