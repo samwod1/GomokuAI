@@ -1,5 +1,7 @@
 #returns the best possible action to do with that board
 import copy
+import random
+
 import timer
 import initialise
 import math as math1
