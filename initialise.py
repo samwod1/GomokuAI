@@ -30,7 +30,7 @@ O_WIN = pygame.transform.scale(O_WIN, (22, 22))
 #          list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
 
 BG_COLOR = (255, 253, 243)
-board_size = 6
+board_size = 3
 game_finished = False
 board = []
 count = 0
@@ -44,7 +44,7 @@ for i in range(board_size):
 print(board)
 
 distanceBtwRows = BOARD_SIZE // board_size
-winCondition = 4
+winCondition = 3
 humanTurn = 'X'
 computerTurn = 'O'
-move_first = 'O'
+move_first = 'X'

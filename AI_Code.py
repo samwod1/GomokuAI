@@ -152,7 +152,7 @@ def MCR_player(state):
     print("state: " + str(state))
     s = copy.deepcopy(state)
     turn = s[1]
-    n = 100  # performs n many rollouts
+    n = 200  # performs n many rollouts
     rolloutSim = rollout(s)  # first rollout
     rolloutValue = 0
     for i in range(n):
@@ -164,19 +164,6 @@ def MCR_player(state):
         elif nextRollout == 0:
             print("rollout draw")
         rolloutValue = rolloutValue + nextRollout
-
-    # for i in range(n):
-    #     nextRollout = rollout(s)
-    #     print("nextRollout: " + str(nextRollout))
-    #     print("rolloutSim: " + str(rolloutSim))
-    #     if rolloutSim < nextRollout and turn == 0:
-    #         print("switching, rolloutSim: " + str(rolloutSim) + " nextRollout: " + str(nextRollout) + " on turn: " + str(turn))
-    #         rolloutSim = nextRollout
-    #     elif rolloutSim > nextRollout and turn == 1:
-    #         print("switching, rolloutSim: " + str(rolloutSim) + " nextRollout: " + str(nextRollout) + " on turn: " + str(turn))
-    #         rolloutSim = nextRollout
-    #     else:
-    #         print("no switching")
 
     return rolloutValue
 

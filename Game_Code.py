@@ -33,8 +33,6 @@ def redraw():
 def reset_board():
     global graphical_board, board, to_move, game_finished, move_first
 
-    # board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
-    #          list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
     board = []
     count = 0
 
@@ -52,8 +50,8 @@ def reset_board():
         for j in range(board_size):
             graphical_board[i].append([None, None])
 
-    to_move = 'O'
-    move_first = 'O'
+    to_move = 'X'
+    move_first = 'X'
 
     SCREEN.fill(BG_COLOR)
     pygame.display.flip()
