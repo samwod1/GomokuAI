@@ -3,8 +3,6 @@ import math as math1
 import random
 import time as timer
 
-import pygame
-import Game_Code
 import initialise
 
 board_size = initialise.board_size
@@ -27,7 +25,6 @@ def result(state, action):
         turn = 'X'
 
     s[1] = turn
-   # print("state: " + str(state))
     return s
 
 
@@ -40,10 +37,7 @@ def getActions(state):
     for i in range(board_size):
         for j in range(board_size):
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-               # next_state[i][j] = to_move
                 actions.append([[j, i], to_move])  # [[x, y], to_move]
-
-    #print("actions!!: " + str(actions))
 
     return actions
 
@@ -134,6 +128,7 @@ def terminal_test(state):
 
     return False, 2, []
 
+
 def successors(state):
     s = copy.deepcopy(state)
     to_move = s[1]
@@ -153,15 +148,12 @@ def successors(state):
 
     for i in range(board_size):
         for j in range(board_size):
-            # print("current board: " + str(current_board))
             next_state = copy.deepcopy(current_board)
-            # print("next state: " + str(next_state))
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
                 next_state[i][j] = to_move
                 res.append([next_state, to_move_num])
-    #  print(res)
-
     return res
+
 
 def rollout(state):
     s = copy.deepcopy(state)
@@ -175,11 +167,10 @@ def rollout(state):
             s = succ[index]
 
 
-
 def MCR_player(state):
     print("state: " + str(state))
     s = copy.deepcopy(state)
-    n = 15  # performs n many rollouts
+    n = 30  # performs n many rollouts
     rolloutValue = 0
     for i in range(n):
         nextRollout = rollout(s)
@@ -199,6 +190,7 @@ def MCR_player(state):
         rolloutValue = -1
 
     return rolloutValue
+
 
 def minValue(state, depth, alpha, beta):
     print("  ")
