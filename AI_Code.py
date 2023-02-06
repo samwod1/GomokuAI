@@ -10,6 +10,7 @@ import initialise
 board_size = initialise.board_size
 winCondition = initialise.winCondition
 computerTurn = initialise.computerTurn
+maxDepth = 10
 
 
 def result(state, action):
@@ -133,12 +134,86 @@ def terminal_test(state):
 
     return False, 2, []
 
+def successors(state):
+    s = copy.deepcopy(state)
+    to_move = s[1]
 
-def minValue(state):
+    if to_move == 1:
+        to_move = 'X'
+    else:
+        to_move = 'O'
+
+    if to_move == 'X':
+        to_move_num = 0
+    else:
+        to_move_num = 1
+
+    current_board = s[0]
+    res = []
+
+    for i in range(board_size):
+        for j in range(board_size):
+            # print("current board: " + str(current_board))
+            next_state = copy.deepcopy(current_board)
+            # print("next state: " + str(next_state))
+            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
+                next_state[i][j] = to_move
+                res.append([next_state, to_move_num])
+    #  print(res)
+
+    return res
+
+def rollout(state):
+    bestPath = []
+    while True:
+        # print(state)
+        terminal, utility, path = terminal_test(state)
+        if terminal:
+            return utility
+        else:
+            succ = successors(state)
+            index = random.randint(0, len(succ) - 1)
+            state = succ[index]
+            bestPath.append(state)
+
+
+
+# rollout function
+def MCR_player(state):
+    s = copy.deepcopy(state)
+    turn = s[1]
+    print("turn: " + str(turn))
+    print("state: " + str(state))
+    n = 50  # performs n many rollouts
+    # print("n: " + str(n))
+    rolloutSim = rollout(s)  # first rollout
+
+    for i in range(n):
+        nextRollout = rollout(s)
+        print("rolloutSim: " + str(rolloutSim[0]))
+        print("nextRollout: " + str(nextRollout[0]))
+        print("turn: " + str(turn))
+        if rolloutSim[0] < nextRollout[0] and turn == 0:
+            print("changing Rollout!! O")
+            rolloutSim = nextRollout
+        elif rolloutSim[0] > nextRollout[0] and turn == 1:
+            print("changing Rollout!! O")
+            rolloutSim = nextRollout
+
+    # print("rolloutSim" + str(rolloutSim))
+
+    return rolloutSim
+
+def minValue(state, depth):
     print("  ")
     print("<<<<<<< MIN VALUE >>>>>>>")
     print(" ")
     fin, utility, path = terminal_test(state)
+
+    if depth >= maxDepth:
+        return MCR_player(state)
+    else:
+        depth += 1
 
     if fin:
         print("returning utlity: " + str(utility) + " on state: " + str(state))
@@ -152,16 +227,21 @@ def minValue(state):
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = min(v, maxValue(r))
+            v = min(v, maxValue(r, depth))
         return v
 
-def maxValue(state):
+
+def maxValue(state, depth):
     print("  ")
     print("<<<<<<< MAX VALUE >>>>>>>")
     print(" ")
 
-    fin, utility, path = terminal_test(state)
+    if depth >= maxDepth:
+        return MCR_player(state)
+    else:
+        depth += 1
 
+    fin, utility, path = terminal_test(state)
     if fin:
         print("returning utlity: " + str(utility) + " on state: " + str(state))
         return utility
@@ -172,24 +252,26 @@ def maxValue(state):
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = max(v, minValue(r))
+            v = max(v, minValue(r, depth))
         return v
-    # rollout function
+
 
 def minimax(state):
     actions = getActions(state)
+    depth = 0
 
     bestActionUtility = -1 * math1.inf
     bestAction = None
 
     for a in actions:
         r = result(state, a)
-        minimum = minValue(r)
+        minimum = minValue(r, depth)
         if minimum > bestActionUtility:
             bestAction = a
             bestActionUtility = minimum
 
     return bestAction
+
 
 def AI_Player_minimax(state):
     start = timer.time()
