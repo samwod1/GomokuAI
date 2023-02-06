@@ -10,7 +10,7 @@ import initialise
 board_size = initialise.board_size
 winCondition = initialise.winCondition
 computerTurn = initialise.computerTurn
-maxDepth = 10
+maxDepth = 3
 
 
 def result(state, action):
@@ -164,45 +164,41 @@ def successors(state):
     return res
 
 def rollout(state):
-    bestPath = []
+    s = copy.deepcopy(state)
     while True:
-        # print(state)
-        terminal, utility, path = terminal_test(state)
+        terminal, utility, path = terminal_test(s)
         if terminal:
             return utility
         else:
-            succ = successors(state)
+            succ = successors(s)
             index = random.randint(0, len(succ) - 1)
-            state = succ[index]
-            bestPath.append(state)
+            s = succ[index]
 
 
 
-# rollout function
 def MCR_player(state):
-    s = copy.deepcopy(state)
-    turn = s[1]
-    print("turn: " + str(turn))
     print("state: " + str(state))
-    n = 50  # performs n many rollouts
-    # print("n: " + str(n))
-    rolloutSim = rollout(s)  # first rollout
-
+    s = copy.deepcopy(state)
+    n = 1  # performs n many rollouts
+    rolloutValue = 0
     for i in range(n):
         nextRollout = rollout(s)
-        print("rolloutSim: " + str(rolloutSim[0]))
-        print("nextRollout: " + str(nextRollout[0]))
-        print("turn: " + str(turn))
-        if rolloutSim[0] < nextRollout[0] and turn == 0:
-            print("changing Rollout!! O")
-            rolloutSim = nextRollout
-        elif rolloutSim[0] > nextRollout[0] and turn == 1:
-            print("changing Rollout!! O")
-            rolloutSim = nextRollout
+        if nextRollout == -1:
+            print("rollout Black wins")
+        elif nextRollout == 1:
+            print("rollout White wins")
+        elif nextRollout == 0:
+            print("rollout draw")
+        rolloutValue = rolloutValue + nextRollout
 
-    # print("rolloutSim" + str(rolloutSim))
+    if rolloutValue == 0:
+        rolloutValue = 0
+    elif rolloutValue > 0:
+        rolloutValue = 1
+    elif rolloutValue < 0:
+        rolloutValue = -1
 
-    return rolloutSim
+    return rolloutValue
 
 def minValue(state, depth):
     print("  ")
@@ -211,6 +207,7 @@ def minValue(state, depth):
     fin, utility, path = terminal_test(state)
 
     if depth >= maxDepth:
+        print("DEPTH REACHED, ROLLING OUT")
         return MCR_player(state)
     else:
         depth += 1
@@ -237,6 +234,7 @@ def maxValue(state, depth):
     print(" ")
 
     if depth >= maxDepth:
+        print("DEPTH REACHED, ROLLING OUT")
         return MCR_player(state)
     else:
         depth += 1
