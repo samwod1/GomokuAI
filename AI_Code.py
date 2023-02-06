@@ -179,7 +179,7 @@ def rollout(state):
 def MCR_player(state):
     print("state: " + str(state))
     s = copy.deepcopy(state)
-    n = 1  # performs n many rollouts
+    n = 15  # performs n many rollouts
     rolloutValue = 0
     for i in range(n):
         nextRollout = rollout(s)
@@ -200,7 +200,7 @@ def MCR_player(state):
 
     return rolloutValue
 
-def minValue(state, depth):
+def minValue(state, depth, alpha, beta):
     print("  ")
     print("<<<<<<< MIN VALUE >>>>>>>")
     print(" ")
@@ -224,11 +224,14 @@ def minValue(state, depth):
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = min(v, maxValue(r, depth))
+            v = min(v, maxValue(r, depth, alpha, beta))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
         return v
 
 
-def maxValue(state, depth):
+def maxValue(state, depth, alpha, beta):
     print("  ")
     print("<<<<<<< MAX VALUE >>>>>>>")
     print(" ")
@@ -250,20 +253,26 @@ def maxValue(state, depth):
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = max(v, minValue(r, depth))
+            v = max(v, minValue(r, depth, alpha, beta))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+
         return v
 
 
 def minimax(state):
     actions = getActions(state)
     depth = 0
+    alpha = 0
+    beta = 0
 
     bestActionUtility = -1 * math1.inf
     bestAction = None
 
     for a in actions:
         r = result(state, a)
-        minimum = minValue(r, depth)
+        minimum = minValue(r, depth, alpha, beta)
         if minimum > bestActionUtility:
             bestAction = a
             bestActionUtility = minimum
@@ -296,5 +305,4 @@ def add_XO_AI(current_board, to_move):
     state = state_conversion(cbord, to_move)
 
     action = AI_Player_minimax(state)
-    print(getActions([[[1, 2, 'X'], [4, 'O', 6], ['O', 'X', 'O']], 'O']))
     return action
