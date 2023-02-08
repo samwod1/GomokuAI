@@ -8,7 +8,7 @@ import initialise
 board_size = initialise.board_size
 winCondition = initialise.winCondition
 computerTurn = initialise.computerTurn
-maxDepth = 3
+maxDepth = 4
 
 
 def result(state, action):
@@ -170,7 +170,7 @@ def rollout(state):
 def MCR_player(state):
     print("state: " + str(state))
     s = copy.deepcopy(state)
-    n = 100  # performs n many rollouts
+    n = 15  # performs n many rollouts
     rolloutValue = 0
     for i in range(n):
         nextRollout = rollout(s)
@@ -182,13 +182,6 @@ def MCR_player(state):
             print("rollout draw")
         rolloutValue = rolloutValue + nextRollout
 
-    if rolloutValue == 0:
-        rolloutValue = 0
-    elif rolloutValue > 0:
-        rolloutValue = 1
-    elif rolloutValue < 0:
-        rolloutValue = -1
-
     return rolloutValue
 
 
@@ -199,10 +192,7 @@ def minValue(state, depth, alpha, beta):
     fin, utility, path = terminal_test(state)
 
     if depth >= maxDepth:
-        print("DEPTH REACHED, ROLLING OUT")
         return MCR_player(state)
-    else:
-        depth += 1
 
     if fin:
         print("returning utlity: " + str(utility) + " on state: " + str(state))
@@ -216,7 +206,7 @@ def minValue(state, depth, alpha, beta):
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = min(v, maxValue(r, depth, alpha, beta))
+            v = min(v, maxValue(r, depth + 1, alpha, beta))
             if v <= alpha:
                 return v
             beta = min(beta, v)
@@ -229,23 +219,20 @@ def maxValue(state, depth, alpha, beta):
     print(" ")
 
     if depth >= maxDepth:
-        print("DEPTH REACHED, ROLLING OUT")
         return MCR_player(state)
-    else:
-        depth += 1
 
     fin, utility, path = terminal_test(state)
     if fin:
         print("returning utlity: " + str(utility) + " on state: " + str(state))
         return utility
     else:
-        v = -1 * math1.inf
+        v = -math1.inf
         actions = getActions(state)
         print("looping through actions on state: " + str(state))
         for a in actions:
             r = result(state, a)
             print("got result: " + str(r) + " from action: " + str(a))
-            v = max(v, minValue(r, depth, alpha, beta))
+            v = max(v, minValue(r, depth + 1, alpha, beta))
             if v >= beta:
                 return v
             alpha = max(alpha, v)
@@ -256,10 +243,10 @@ def maxValue(state, depth, alpha, beta):
 def minimax(state):
     actions = getActions(state)
     depth = 0
-    alpha = 0
-    beta = 0
+    alpha = -math1.inf
+    beta = math1.inf
 
-    bestActionUtility = -1 * math1.inf
+    bestActionUtility = -math1.inf
     bestAction = None
 
     for a in actions:
