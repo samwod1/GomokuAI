@@ -152,7 +152,7 @@ def MCR_player(state):
     print("state: " + str(state))
     s = copy.deepcopy(state)
     turn = s[1]
-    n = 200  # performs n many rollouts
+    n = 1  # performs n many rollouts
     rolloutSim = rollout(s)  # first rollout
     rolloutValue = 0
     for i in range(n):
