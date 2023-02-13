@@ -82,7 +82,7 @@ def add_XO(board, graphical_board, to_move):
     if to_move == humanTurn and not game_finished:
         action = humanAction()
         if action is not None:
-            board, to_move = addPiece(action, board, graphical_board)
+            board, to_move = addPiece(action, board, graphical_board) #TODO fix the double click bug
 
     elif to_move == computerTurn and not game_finished:
         action = computerAction(board)
@@ -107,7 +107,7 @@ def humanAction():
 def computerAction(board):
 
     action = AI_Code.add_XO_AI(board, to_move)
-
+    print("action: " + str(action))
     return action
 
 

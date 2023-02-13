@@ -2,20 +2,27 @@
 import copy
 import random
 
-import timer
+import time
 import initialise
 import math as math1
 
 tree = {}
 og_state = copy.deepcopy(initialise.board)
-board_size = copy.deepcopy(initialise.board_size)
+board_size = initialise.board_size
+winCondition = initialise.winCondition
+
 def add_XO_AI(board, to_move):
-    cboard = copy.deepcopy(board)
-    state = state_conversion(cboard, to_move)
+    cbord = copy.deepcopy(board)
+    state = state_conversion(cbord, to_move)
+    print("AI operating on state: " + str(state))
+    state = MCTSPlayer(state)
+    action = stateToAction(cbord, state)
+    print("returning action: " + str(action))
 
-    action = MCTSPlayer(state)
-
-    return action
+    if action is not None:
+        return action
+    else:
+        return [[]]
 
 def state_conversion(board, to_move):
     if to_move == 'X':
@@ -25,11 +32,10 @@ def state_conversion(board, to_move):
 
 
 def MCTSPlayer(state):
-
     print("Starting MCTS")
-    start = timer.time()
+    start = time.time()
     action = MCTS(state)
-    end = timer.time()
+    end = time.time()
     duration = end-start
     print("")
     print("AI player moved to state: " + str(action))
@@ -37,89 +43,169 @@ def MCTSPlayer(state):
 
     return action
 
-def MCTS(state):
 
-    tree[str(state)] = ["start", 0, 0] #initial tree node (parent, value, visits)
+def MCTS(state):
+    global tree
+    tree.clear()
+    tree["[]"] = ["start", '0', '0']
+    tree[str(state)] = ["[]", '0', '0'] #initial tree node (parent, value, visits)
 
     iterations = 0
-    while iterations < 10:
+    while iterations < 75:
         traverse_and_expand(copy.deepcopy(state))
         iterations += 1
 
     succ = successors(copy.deepcopy(state))
-
+    print("Tree: " + str(tree))
+    maxUCB = -math1.inf
+    bestNextState = succ[0]
+    for s in succ:
+        print("successor: " + str(s))
+        thisUCB = calcMaxUCB(s)
+        print("UCB: " + str(thisUCB))
+        if thisUCB > maxUCB:
+            print("UCB is better than: " + str(maxUCB))
+            print("Replacing: " + str(bestNextState) + " with " + str(s))
+            maxUCB = thisUCB
+            bestNextState = copy.deepcopy(s)
+    return bestNextState
 
 
 def traverse_and_expand(state):
     global tree
-    current = state.copy()
-    maxUCB = -1 * math1.inf
+    current = copy.deepcopy(state)
+    maxUCB = -math1.inf
+    minUCB = math1.inf
+    UCBNode = current
 
-    while not isLeaf(state):
-        succ = successors(current)
-
+    while not isLeaf(current):
+        #print(str(current) + " is not a leaf!")
+        succ = successors(copy.deepcopy(current))
+        print("adding successors to tree" + str(succ))
         for s in succ:
+            print("s: " + str(s))
             #add successors to the tree
-            tree[str(s)] = [str(current), 0, 0]
-            #calcuate ucb for successor
-            UCB = calcUCB(s)
-            if UCB > maxUCB:
-                maxUCB = UCB
-                UCBNode = copy.deepcopy(s)
+            if tree.get(str(s)) is None: #check to see if the successor is already in the tree, so it doesnt overwrite its stats
+                tree[str(s)] = [str(current), '0', '0']
+            else:
+                print("successor already in tree")
 
-        current = UCBNode
+            # UCB = calcMaxUCB(s)
+            # if UCB > maxUCB:
+            #     maxUCB = UCB
+            #     UCBNode = copy.deepcopy(s)
+
+            # calcuate ucb for successor
+            if s[1] == 0:
+                print("calculating max UCB")
+                UCB = calcMaxUCB(s)
+                if UCB > maxUCB:
+                    maxUCB = UCB
+                    UCBNode = copy.deepcopy(s)
+            elif s[1] == 1:
+                print("calculating min UCB")
+                UCB = calcMinUCB(s)
+                if UCB < minUCB:
+                    minUCB = UCB
+                    UCBNode = copy.deepcopy(s)
+
+        print("moving down the tree, current: " + str(current) + " is now " + str(UCBNode))
+        current = copy.deepcopy(UCBNode)
 
     if tree[str(current)][2] == 0:
-        value = MCR_Player(copy.deepcopy(current))[0]
+        print("tree1: " + str(tree))
+        print(str(current) + " is  a leaf! and hasnt been visited")
+        value = MCR_player(copy.deepcopy(current))
+        print("TRAVERSE AND EXPAND CURRENT: " + str(current))
+        backpropagate(copy.deepcopy(current), value)
+    else:
+        print("tree2: " + str(tree))
+        print(str(current) + " is  a leaf! and has been visited")
+        succ = successors(current)
+        print("adding successors to tree: " + str(succ))
+        for s in succ:
+            print("s: " + str(s))
+            if tree.get(str(s)) is None:
+                tree[str(s)] = [str(current), '0', '0']  # adding successors to tree
+            else:
+                print("successor already in tree")
+
+        current = copy.deepcopy(succ[0])  # current = first new child node
+        value = MCR_player(current)  # rollout value
+        print("TRAVERSE AND EXPAND CURRENT: " + str(current))
+        backpropagate(copy.deepcopy(current), value)
+
 
 def MCR_player(state):
-
-    turn = state[1]
-    n = random.randint(1, 20)  # performs n many rollouts
-    # print("n: " + str(n))
-    rolloutSim = rollout(state)  # first rollout
-
+    print("state: " + str(state))
+    s = copy.deepcopy(state)
+    n = 50  # performs n many rollouts
+    rolloutValue = 0
     for i in range(n):
-        nextRollout = rollout(state)
-        if rolloutSim[0] > nextRollout[0] and turn == 1:
-            rolloutSim = nextRollout
-        elif rolloutSim[0] < nextRollout[0] and turn == 0:
-            rolloutSim = nextRollout
+        nextRollout = rollout(s)
+        if nextRollout == -1:
+            print("rollout Black wins")
+        elif nextRollout == 1:
+            print("rollout White wins")
+        elif nextRollout == 0:
+            print("rollout draw")
+        rolloutValue = rolloutValue + nextRollout
 
-    # print("rolloutSim" + str(rolloutSim))
+    #maybe get rid of this check
+    if rolloutValue <= 0:
+        rolloutValue = -1
+    elif rolloutValue > 0:
+        rolloutValue = 1
+    print("Monte Carlo has returned: " + str(rolloutValue))
+    return rolloutValue
 
-    if len(rolloutSim[1]) == 0:
-        return rolloutSim[0], [state]
-    else:
-        return rolloutSim[0], rolloutSim[1][0]
 
-def rollout(state):
-    bestPath = []
+def backpropagate(node, rolloutValue):
+    global tree
+    print("BACK PROPOGATION NODE: " + str(node))
+
+    current = copy.deepcopy(node)
+    print("BACK PROPOGATION CURRENT: " + str(current))
+    while tree[str(current)][0] != "start":
+        tree[str(current)] = [str(tree[str(current)][0]), str(int(tree[str(current)][1]) + rolloutValue), str(int(tree[str(current)][2]) + 1)]
+        print("Backpropogating: " + str([tree[str(current)]]))
+        current = copy.deepcopy(tree[str(current)][0])  # current becomes parent node
+        print("back propogate current: " + str(current))
+
+
+def rollout(s):
+    state = copy.deepcopy(s)
+    print("ROLLOUT COMMENCING")
+    print("from: " + str(state))
     while True:
-       # print(state)
         terminal, utility, path = terminal_test(state)
         if terminal:
-            return utility, bestPath
+            print("terminal, utility: " + str(utility))
+            print("state: " + str(state))
+            return utility
         else:
             succ = successors(state)
             index = random.randint(0, len(succ) - 1)
-            state = succ[index]
-            bestPath.append(state)
-
-
+            state = copy.deepcopy(succ[index])
 
 
 def isLeaf(state):
     global tree
     leafBool = True
     treeValues = tuple(tree.values())
-    #  print("treeValues: " + str(treeValues))
     for i in range(len(treeValues)):
         if treeValues[i][0] == state:
             leafBool = False and leafBool
         else:
             leafBool = True and leafBool
+    if leafBool:
+        print("Tree: " + str(tree))
+        print(str(state) + " is a leaf!")
+    else:
+        print("Tree: " + str(tree))
+        print(str(state) + " is not a leaf!")
     return leafBool
+
 
 def terminal_test(state):
 
@@ -201,9 +287,9 @@ def terminal_test(state):
             return True, 0, []
 
     if winner == 'X':
-        return True, 1, []
-    elif winner == 'O':
         return True, -1, []
+    elif winner == 'O':
+        return True, 1, []
 
     return False, 2, []
 
@@ -234,17 +320,48 @@ def successors(state):
     return res
 
 
-def calcUCB(state):
+def calcMinUCB(state):
     C = 2
     # if empty node make it inf else apply UCB1 formula
-    if tree[str(state)][1] == 0 and tree[str(state)][2] == 0:
+    if tree[str(state)][1] == '0' and tree[str(state)][2] == '0':
+        UCB = -math1.inf
+    else:
+        # apply UCB, made first parameter negative
+        UCB = int(tree[str(state)][1]) - C * math1.sqrt((math1.log(int(tree[str(tree[str(state)][0])][2]) / int(tree[str(state)][2]))))
+    #print("calcMinUCB: " + str(UCB))
+    return UCB
+
+def stateToAction(init_state, bestState):
+    x_pos = -1
+    y_pos = -1
+    if bestState[1] == 1:
+        turn = 'O'
+    else:
+        turn = 'X'
+    action = None
+
+    for i in range(board_size):
+        y_pos = y_pos + 1
+        for j in range(board_size):
+            x_pos = x_pos + 1
+            if init_state[i][j] != bestState[0][i][j]:
+                action = [[j, i], turn]
+                break
+
+    return action
+
+
+def calcMaxUCB(state):
+    C = 2
+    # if empty node make it inf else apply UCB1 formula
+    if tree[str(state)][1] == '0' and tree[str(state)][2] == '0':
         UCB = math1.inf
     else:
         # apply UCB, made first parameter negative
-        UCB = -(int(tree[str(state)][1])) + C * math1.sqrt((math1.log(int(tree[str(tree[str(state)][0])][2]) / int(tree[str(state)][2]))))
-
-    print("calcUCB: " + str(UCB))
+        UCB = int(tree[str(state)][1]) + C * math1.sqrt((math1.log(int(tree[str(tree[str(state)][0])][2]) / int(tree[str(state)][2]))))
+    print("FuncCalcMaxUCB: " + str(UCB))
     return UCB
+
 
 
 
