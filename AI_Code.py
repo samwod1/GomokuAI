@@ -8,7 +8,7 @@ import initialise
 board_size = initialise.board_size
 winCondition = initialise.winCondition
 computerTurn = initialise.computerTurn
-maxDepth = 4
+maxDepth = 2
 
 
 def result(state, action):
@@ -170,7 +170,7 @@ def rollout(state):
 def MCR_player(state):
     print("state: " + str(state))
     s = copy.deepcopy(state)
-    n = 15  # performs n many rollouts
+    n = 10  # performs n many rollouts
     rolloutValue = 0
     for i in range(n):
         nextRollout = rollout(s)
