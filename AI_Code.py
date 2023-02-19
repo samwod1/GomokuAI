@@ -10,6 +10,8 @@ tree = {}
 og_state = copy.deepcopy(initialise.board)
 board_size = initialise.board_size
 winCondition = initialise.winCondition
+blackWins = 0
+whiteWins = 0
 
 def add_XO_AI(board, to_move):
     cbord = copy.deepcopy(board)
@@ -52,7 +54,7 @@ def MCTS(state):
     print(state)
 
     iterations = 0
-    while iterations < 300:
+    while iterations < 150:
         traverse_and_expand(copy.deepcopy(state))
         iterations += 1
 
@@ -69,6 +71,14 @@ def MCTS(state):
             print("Replacing: " + str(bestNextState) + " with " + str(s))
             maxUCB = thisUCB
             bestNextState = copy.deepcopy(s)
+
+    #s = [[['O', 'X', 'O'], ['X', 'O', 'X'], ['X', 'O', 'X']], 1]
+    # value = MCR_player(s)
+    # print("White wins: " + str(whiteWins))
+    # print("Black wins: " + str(blackWins))
+    # print("value:  " + str(value))
+
+    #terminal_test(s)
 
     return bestNextState
 
@@ -90,42 +100,42 @@ def traverse_and_expand(state):
         # print(" successors: " + str(succ))
         for s in succ:
             UCB = calcMaxUCB(s)
-            # print("max UCB calculated as: " + str(UCB))
+            print("max UCB calculated as: " + str(UCB))
             if UCB > maxUCB:
                 # print("UCB is bigger than maxUCB: " + str(maxUCB))
                 maxUCB = UCB
                 UCBNode = copy.deepcopy(s)
 
             # if s[1] == 0:
-            #     # print("1 turn s: " + str(s))
+            #     print("1 turn s: " + str(s))
             #     UCB = calcMaxUCB(s)
-            #     # print("max UCB calculated as: " + str(UCB))
+            #     print("max UCB calculated as: " + str(UCB))
             #     if UCB > maxUCB:
-            #         # print("UCB is bigger than maxUCB: " + str(maxUCB))
+            #         print("UCB is bigger than maxUCB: " + str(maxUCB))
             #         maxUCB = UCB
             #         UCBNode = copy.deepcopy(s)
-            #         # print("UCB node now: " + str(UCBNode))
+            #         print("UCB node now: " + str(UCBNode))
             # elif s[1] == 1:
-            #     # print("1 turn s: " + str(s))
+            #     print("0 turn s: " + str(s))
             #     UCB = calcMinUCB(s)
-            #     # print("min UCB calculated as: " + str(UCB))
+            #     print("min UCB calculated as: " + str(UCB))
             #     if UCB < minUCB:
-            #         # print("UCB is smaller than minUCB: " + str(minUCB))
+            #         print("UCB is smaller than minUCB: " + str(minUCB))
             #         minUCB = UCB
             #         UCBNode = copy.deepcopy(s)
-            #         # print("UCB node now: " + str(UCBNode))
+            #         print("UCB node now: " + str(UCBNode))
 
-        # print("Current has been changed from: " + str(current) + " to: " + str(UCBNode))
+        print("Current has been changed from: " + str(current) + " to: " + str(UCBNode))
         current = copy.deepcopy(UCBNode)
 
     if tree[str(current)][2] == 0:
-        # print("Current is now a leaf node and hasn't been visited.")
+        print("Current is now a leaf node and hasn't been visited.")
         value = MCR_player(copy.deepcopy(current))
         backpropagate(copy.deepcopy(current), value)
 
     elif tree[str(current)][2] > 0:
-        # print("Current is now a leaf node and has been visited.")
-        # print("Adding successors to tree")
+        print("Current is now a leaf node and has been visited.")
+        print("Adding successors to tree")
         succ = successors(current)
         if len(succ) != 0:
             for s in succ:
@@ -133,45 +143,61 @@ def traverse_and_expand(state):
                 if tree.get(str(s)) is None:
                     tree[str(s)] = [str(current), 0, 0]  # adding successors to tree
 
-            # print("First new child node is now rolled out on")
+            print("First new child node is now rolled out on")
             current = succ[0]  # current = first new child node
             value = MCR_player(copy.deepcopy(current))  # rollout value
             backpropagate(current, value)
 
 
+# def MCR_player(state):
+#     global blackWins, whiteWins
+#     # print("state: " + str(state))
+#     s = copy.deepcopy(state)
+#     n = 100  # performs n many rollouts
+#     rolloutValue = 0
+#     for i in range(n):
+#         nextRollout = rollout(s)
+#         if nextRollout == -1:
+#             blackWins += 1
+#             #print("rollout Black wins")
+#         elif nextRollout == 1:
+#             whiteWins += 1
+#            # print("rollout White wins")
+#         rolloutValue = rolloutValue + nextRollout
+#
+#     #maybe get rid of this check
+#     if rolloutValue < 0:
+#         rolloutValue = -1
+#     elif rolloutValue > 0:
+#         rolloutValue = 1
+#
+#     print("Monte Carlo has returned: " + str(rolloutValue))
+#     return rolloutValue
+
 def MCR_player(state):
-    # print("state: " + str(state))
     s = copy.deepcopy(state)
-    n = 150  # performs n many rollouts
-    rolloutValue = 0
+    n = 100
+    turn = state[1]
+    rolloutValue = rollout(s) #initial rollout
     for i in range(n):
         nextRollout = rollout(s)
-        # if nextRollout == -1:
-        #     # print("rollout Black wins")
-        # elif nextRollout == 1:
-        #     print("rollout White wins")
-        # elif nextRollout == 0:
-        #     print("rollout draw")
-        rolloutValue = rolloutValue + nextRollout
+        if nextRollout > rolloutValue:
+            print("Turn 0 and next rollout: " + str(nextRollout) + " rolloutValue: " + str(rolloutValue))
+            rolloutValue = nextRollout
 
-    #maybe get rid of this check
-    if rolloutValue < 0:
-        rolloutValue = -1
-    elif rolloutValue > 0:
-        rolloutValue = 1
-    # print("Monte Carlo has returned: " + str(rolloutValue))
+    print("Monte Carlo has returned: " + str(rolloutValue))
     return rolloutValue
 
 
 def backpropagate(node, rolloutValue):
     global tree
     c = copy.deepcopy(node)
-    print("BACK PROPOGATION CURRENT: " + str(c))
+    #print("BACK PROPOGATION CURRENT: " + str(c))
     while tree[str(c)][0] != "start":
         tree[str(c)] = [str(tree[str(c)][0]), tree[str(c)][1] + rolloutValue, int(tree[str(c)][2]) + 1]
-        print("Backpropogating: " + str([tree[str(c)]]))
+       # print("Backpropogating: " + str([tree[str(c)]]))
         c = copy.deepcopy(tree[str(c)][0])  # current becomes parent node
-        print("back propogate current: " + str(c))
+      #  print("back propogate current: " + str(c))
 
 
 def rollout(s):
@@ -186,7 +212,9 @@ def rollout(s):
             return utility
         else:
             succ = successors(state)
+           # print("rollout successors: " + str(succ))
             index = random.randint(0, len(succ) - 1)
+           # print("picking: " + str(succ[index]))
             state = copy.deepcopy(succ[index])
 
 
@@ -287,6 +315,7 @@ def terminal_test(state):
                     break
 
         if draw_found:
+            print("DRAW FOUND: " + str(state))
             return True, 0, []
 
     if winner == 'X':
@@ -325,15 +354,6 @@ def successors(state):
 
 def calcMinUCB(state):
     C = 2
-    # print("v: " + str(tree[str(state)][1]))
-    # print("C: " + str(C))
-    # print("N: " + str(tree[str(tree[str(state)][0])][2]))
-    # print("n: " + str(tree[str(state)][2]))
-    if tree[str(tree[str(state)][0])][2] < tree[str(state)][2]:
-        print("STATE: " + str(state))
-        print("STATE VISITS: " + str(tree[str(state)][2]))
-        print("PARENT: " + str(tree[str(tree[str(state)][0])]))
-        print("PARENT VISITS: " + str(tree[str(tree[str(state)][0])][2]))
 
     # if empty node make it inf else apply UCB1 formula
     if tree[str(state)][1] == 0 and tree[str(state)][2] == 0:
