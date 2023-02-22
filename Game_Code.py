@@ -54,8 +54,8 @@ def reset_board():
         for j in range(board_size):
             graphical_board[i].append([None, None])
 
-    to_move = 'O'
-    move_first = 'O'
+    to_move = 'X'
+    move_first = 'X'
 
     SCREEN.fill(BG_COLOR)
     pygame.display.flip()
