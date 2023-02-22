@@ -6,12 +6,19 @@ import time
 import initialise
 import math as math1
 
-tree = {}
+tree = []
 og_state = copy.deepcopy(initialise.board)
 board_size = initialise.board_size
 winCondition = initialise.winCondition
 blackWins = 0
 whiteWins = 0
+class Node:
+    def __init__(self, node, parent, value, visits):
+        self.node = node
+        self.parent = parent
+        self.value = value
+        self. visits = visits
+
 
 def add_XO_AI(board, to_move):
     cbord = copy.deepcopy(board)
@@ -49,9 +56,10 @@ def MCTSPlayer(state):
 def MCTS(state):
     global tree
     tree.clear()
-    tree["[]"] = ["start", 0, 0]
-    tree[str(state)] = ["[]", 0, 0] #initial tree node (parent, value, visits)
-    print(state)
+    firstNode = Node("[]", "start", 0, 0)
+    secondNode = Node(str(state), "start", 0, 0)
+    tree.append(firstNode)
+    tree.append(secondNode)
 
     iterations = 0
     while iterations < 20:
@@ -156,8 +164,8 @@ def traverse_and_expand(state):
                 print("s: " + str(s))
                 if tree.get(str(s)) is None:
                     tree[str(s)] = [str(current), 0, 0]  # adding successors to tree
-                # else:
-                #     tree[str(str(s) + str(tree[tree[str(s)][0]]))] = [str(current), 0, 0]
+                else:
+                    tree[str([str(s), str(tree[tree[str(s)][0]])])] = [str(current), 0, 0]
 
             print("First new child node is now rolled out on")
             current = succ[0]  # current = first new child node
@@ -208,20 +216,13 @@ def rollout(s):
 def isLeaf(state):
     global tree
     leafBool = True
-    treeValues = tuple(tree.values())
-    for i in range(len(treeValues)):
+    for i in range(len(tree)):
         # print("tVal: " + treeValues[i][0])
         # print("str(state): " + str(state))
-        if treeValues[i][0] == str(state):
+        if tree[i].parent == str(state):
             leafBool = False and leafBool
         else:
             leafBool = True and leafBool
-    # if leafBool:
-    #     print("Tree: " + str(tree))
-    #     print(str(state) + " is a leaf!")
-    # else:
-    #     print("Tree: " + str(tree))
-    #     print(str(state) + " is not a leaf!")
     return leafBool
 
 
@@ -342,17 +343,19 @@ def successors(state):
 def calcMinUCB(s):
     state = copy.deepcopy(s)
     C = 2
-    print("v: " + str(tree[str(state)][1]))
+    node = getNode(state)
+    parent = getNode(node.parent)
+    print("v: " + str(node.value))
     print("C: " + str(C))
-    print("N: " + str(tree[str(tree[str(state)][0])][2]))
-    print("n: " + str(tree[str(state)][2]))
+    print("N: " + str(parent.visits))
+    print("n: " + str(node.visits))
 
     # if empty node make it inf else apply UCB1 formula
-    if tree[str(state)][1] == 0 and tree[str(state)][2] == 0:
+    if node.visits == 0 and node.value == 0:
         UCB = -math1.inf
     else:
         # apply UCB, made first parameter negative
-        UCB = (int(tree[str(state)][1]) / tree[str(state)][2]) - C * math1.sqrt((math1.log(tree[str(tree[str(state)][0])][2]) / tree[str(state)][2]))
+        UCB = (node.value / node.visits) - C * math1.sqrt((math1.log(parent.visits) / node.visits))
     print("Minimum UCB: " + str(UCB))
     return UCB
 
@@ -375,22 +378,29 @@ def stateToAction(init_state, bestState):
 
     return action
 
+def getNode(state):
+    global tree
+    for i in range(len(tree)):
+        if tree[i].node == str(state):
+            return tree[i]
 
 def calcMaxUCB(s):
     state = copy.deepcopy(s)
     C = 2
-    print("v: " + str(tree[str(state)][1]))
+    node = getNode(state)
+    parent = getNode(node.parent)
+    print("v: " + str(node.value))
     print("C: " + str(C))
-    print("N: " + str(tree[str(tree[str(state)][0])][2]))
-    print("n: " + str(tree[str(state)][2]))
+    print("N: " + str(parent.visits))
+    print("n: " + str(node.visits))
 
     # if empty node make it inf else apply UCB1 formula
-    if tree[str(state)][1] == 0 and tree[str(state)][2] == 0:
+    if node.visits == 0 and node.value == 0:
         UCB = math1.inf
     else:
         # apply UCB, made first parameter negative
-        UCB = (int(tree[str(state)][1]) / tree[str(state)][2]) + C * math1.sqrt((math1.log(tree[str(tree[str(state)][0])][2]) / tree[str(state)][2]))
-    print("Maximum UCB: " + str(UCB))
+        UCB = (node.value / node.visits) + C * math1.sqrt((math1.log(parent.visits) / node.visits))
+    print("Minimum UCB: " + str(UCB))
     return UCB
 
 
