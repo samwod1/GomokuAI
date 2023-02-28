@@ -41,8 +41,6 @@ for i in range(board_size):
         count += 1
         board[i].append(count)
 
-print(board)
-
 distanceBtwRows = BOARD_SIZE // board_size
 winCondition = 3
 humanTurn = 'X'

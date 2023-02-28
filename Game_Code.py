@@ -108,13 +108,13 @@ def humanAction():
 def computerAction(board):
 
     action = AI_Code.add_XO_AI(board, to_move)
-    print("action: " + str(action))
+    #print("action: " + str(action))
     return action
 
 
 def addPiece(action, board, graphical_board):
     # action = [[12,3],"X"] e.g [[x,y], to_move]
-    print("actoin:: " + str(action))
+    #print("actoin:: " + str(action))
     x = action[0][0]
     y = action[0][1]
     turn = action[1]
