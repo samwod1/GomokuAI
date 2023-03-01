@@ -82,9 +82,9 @@ def MCTS(state):
 
     while iterations <= 1000:
         traverse_and_expand()
-        # printTree()
-        # print(" ")
-        # input("Press enter to continue... \n")
+        printPartialTree()
+        print(" ")
+        input("Press enter to continue... \n")
         iterations += 1
 
     maxUCB = -math1.inf
@@ -213,17 +213,20 @@ def printBoard(n):
 
 
 def printNode(node):
-    print(str(getDepth(node)), end=". ")
-    print(str(printBoard(node.node)) + "turn: " + str(node.node[1]) + " visits: " + str(node.visits) + " value: "
+    string = ""
+    string = string + str(getDepth(node))
+    string = string + (str(printBoard(node.node)) + "turn: " + str(node.node[1]) + " visits: " + str(node.visits) + " value: "
           + str(node.value) + ((" maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent[1] == 0 else str(
         " minUCB: " + str(calcMinUCB(node.node, node.parent)))) if node.parent != [] else str(" UCB: N/A")))
+    return string
 
 
 def getChildren(node):
     children = []
     for i in range(len(tree)):
         if tree[i].parent_pos == node.pos:
-            children.append(tree[i])
+            if tree[i] != None:
+                children.append(tree[i])
 
     return children
 
@@ -262,7 +265,9 @@ def printPartialTree():
     print(" C = " + str(C))
     children = getChildren(tree[1])
     for c in children:
-        print(printNode(c))
+        s = printNode(c)
+        if s is not None:
+            print(s)
 
 
 def MCR_player(state):
