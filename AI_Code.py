@@ -77,14 +77,15 @@ def MCTS(state):
     tree.clear()
     createNode([], "start", -1)  # create the root node
     start = createNode(state, [], 0)  # create the initial node
+    start.visits = 1
     iterations = 0
     C = 1.4
 
     while iterations <= 1000:
         traverse_and_expand()
-        printPartialTree()
-        print(" ")
-        input("Press enter to continue... \n")
+        # printPartialTree()
+        printTree()
+        input("Press enter to continue...")
         iterations += 1
 
     maxUCB = -math1.inf
@@ -110,14 +111,15 @@ def traverse_and_expand():
     current = copy.deepcopy(tree[1])
     terminalBool = False
     while True:
-        print("Current  " + printNodeValues(current))
-        if isLeaf(current):
-            break
-
         boolean, value, path = terminal_test(current.node)
         if boolean:
             terminalBool = True
             break
+
+        print("Current  " + printNodeValues(current))
+        if isLeaf(current):
+            break
+
 
         maxUCB = -math1.inf
         minUCB = math1.inf
@@ -178,7 +180,8 @@ def traverse_and_expand():
                 backpropagate(firstChild, value)
     else:
         print("Leaf node is terminal: " + str(current.node) + "\n")
-        value = MCR_player(current.node)
+        print("No rollout needed, backpropagating utility")
+        boolean, value, path  = terminal_test(current.node)
         backpropagate(current, value)
 
 
@@ -215,9 +218,14 @@ def printBoard(n):
 def printNode(node):
     string = ""
     string = string + str(getDepth(node))
-    string = string + (str(printBoard(node.node)) + "turn: " + str(node.node[1]) + " visits: " + str(node.visits) + " value: "
-          + str(node.value) + ((" maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent[1] == 0 else str(
-        " minUCB: " + str(calcMinUCB(node.node, node.parent)))) if node.parent != [] else str(" UCB: N/A")))
+    string = string + (
+            str(printBoard(node.node)) + "turn: " + str(node.node[1]) + " visits: " + str(node.visits) + " value: "
+            + str(node.value) + " maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent != [] else
+            str("UCB: N/A"))
+    #     " UCB: N/A")))
+    # (" maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent[1] == 0 else str(
+    #     " minUCB: " + str(calcMinUCB(node.node, node.parent)))) if node.parent != [] else str(
+    #     " UCB: N/A")))
     return string
 
 
@@ -251,10 +259,12 @@ def printTreeRecursive(node):
     children = getChildren(node)
     print(str(getDepth(node)), end=". ")
     print(str(printBoard(node.node)) + "turn: " + str(node.node[1]) + " visits: " + str(node.visits) + " value: "
-          + str(node.value) +
-          ((" maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent[1] == 0
-            else str(" minUCB: " + str(calcMinUCB(node.node, node.parent)))) if node.parent != [] else str(
-              " UCB: N/A")))
+          + str(node.value) + " maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent != [] else str(
+        " UCB: N/A"))
+
+    # ((" maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent[1] == 0
+    #   else str(" minUCB: " + str(calcMinUCB(node.node, node.parent)))) if node.parent != [] else str(
+    #     " UCB: N/A")))
     for c in children:
         printTreeRecursive(c)
 
@@ -271,6 +281,7 @@ def printPartialTree():
 
 
 def MCR_player(state):
+    return rollout(state)
     # turn = state[1]
     # n = 5  # performs n many rollouts
     # rolloutSim = rollout(state)  # first rollout
@@ -283,7 +294,12 @@ def MCR_player(state):
     #         rolloutSim = nextRollout
     #
     # return rolloutSim
-    return rollout(state)
+
+    # result = rollout(state)
+    # if state[1] == 0:
+    #     return result * -1
+    # elif state[1] == 1:
+    #     return result
 
 
 def backpropagate(firstChild, value):
@@ -295,7 +311,9 @@ def backpropagate(firstChild, value):
         for i in range(len(tree)):
             if tree[i].node == currentNode.node and tree[i].parent == currentNode.parent:
                 tree[i] = Node(tree[i].node, tree[i].parent, tree[i].parent_pos, tree[i].pos, tree[i].value + value,
-                               tree[i].visits + 1)
+                            tree[i].visits + 1)
+
+
                 parent = copy.deepcopy(tree[i])
                 print("UPDATING NODE VALUES  " + printNodeValues(tree[i]))
         parent = getParent(parent.parent_pos)
