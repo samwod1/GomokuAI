@@ -43,6 +43,5 @@ for i in range(board_size):
 
 distanceBtwRows = BOARD_SIZE // board_size
 winCondition = 3
-humanTurn = 'X'
-computerTurn = 'O'
-move_first = 'O'
+minimaxTurn = 'X'
+mctsTurn = 'O'

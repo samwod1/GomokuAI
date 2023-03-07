@@ -13,8 +13,8 @@ winCondition = initialise.winCondition
 blackWins = 0
 whiteWins = 0
 draws = 0
-C = 0
-total_iterations = 0
+C = 1.5
+total_iterations = 300
 
 
 class Node:
@@ -79,9 +79,8 @@ def MCTS(state):
     start = createNode(state, [], 0)  # create the initial node
     start.visits = 0
     iterations = 0
-    C = 1.41
 
-    while iterations <= 1000:
+    while iterations <= total_iterations:
         traverse_and_expand()
         # printPartialTree()
         # printTree()
@@ -92,6 +91,7 @@ def MCTS(state):
 
     succ = successors(start.node)
     UCBNode = copy.deepcopy(succ[0])
+    oldC = C
     C = 0
     maxVisits = 0
     for s in succ:
@@ -99,7 +99,7 @@ def MCTS(state):
         if UCB > maxUCB:
             maxUCB = UCB
             UCBNode = copy.deepcopy(s)
-
+    C = oldC
     # for s in succ:
     #     visits = (getNode(s, copy.deepcopy(state))).visits
     #     if visits > maxVisits:
@@ -120,12 +120,11 @@ def traverse_and_expand():
         boolean, value, path = terminal_test(current.node)
         if boolean:
             terminalBool = True
-            break #stops if the current node is terminal
+            break  # stops if the current node is terminal
 
         # print("Current  " + printNodeValues(current))
         if isLeaf(current):
             break
-
 
         maxUCB = -math1.inf
         minUCB = math1.inf
@@ -165,7 +164,7 @@ def traverse_and_expand():
 
         current = copy.deepcopy(getNode(copy.deepcopy(UCBNode), current.node))
 
-    if not terminalBool: #checks if the traversal stopped because a terminal leaf
+    if not terminalBool:  # checks if the traversal stopped because a terminal leaf
         if current.visits == 0:
             # print("Leaf has no visits \n")
             value = MCR_player(current.node)
@@ -186,6 +185,22 @@ def traverse_and_expand():
         boolean, value, path = terminal_test(current.node)
         backpropagate(current, value)
 
+
+def incrementC(c):
+    global C
+    C += c
+
+
+def getC():
+    return C
+
+def getTotalIterations():
+    global total_iterations
+    return total_iterations
+
+def incrementTotalIterations(t):
+    global total_iterations
+    total_iterations += t
 
 def getNode(child, parent):
     for i in range(len(tree)):
@@ -221,9 +236,9 @@ def printNode(node):
     string = ""
     string = string + str(getDepth(node))
     string = string + (
-            str(printBoard(node.node)) + "turn: " + str(node.node[1]) + " visits: " + str(node.visits) + " value: "
-            + str(node.value) + " maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent != [] else
-            str("UCB: N/A"))
+        str(printBoard(node.node)) + "turn: " + str(node.node[1]) + " visits: " + str(node.visits) + " value: "
+        + str(node.value) + " maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent != [] else
+        str("UCB: N/A"))
     #     " UCB: N/A")))
     # (" maxUCB: " + str(calcMaxUCB(node.node, node.parent)) if node.parent[1] == 0 else str(
     #     " minUCB: " + str(calcMinUCB(node.node, node.parent)))) if node.parent != [] else str(
@@ -305,7 +320,6 @@ def MCR_player(state):
     # return rolloutSim
 
 
-
 def backpropagate(firstChild, value):
     global tree
     currentNode = copy.deepcopy(firstChild)
@@ -314,14 +328,13 @@ def backpropagate(firstChild, value):
     while currentNode.parent != "start":
         for i in range(len(tree)):
             if tree[i].node == currentNode.node and tree[i].parent == currentNode.parent:
-                if tree[i].node[1] == 0: #node is a min node, flip value from pos to negative or vice versa
-                    tree[i] = Node(tree[i].node, tree[i].parent, tree[i].parent_pos, tree[i].pos, tree[i].value + (value * -1),
-                            tree[i].visits + 1)
-                else:  #node is a max node, keep value the same
+                if tree[i].node[1] == 0:  # node is a min node, flip value from pos to negative or vice versa
+                    tree[i] = Node(tree[i].node, tree[i].parent, tree[i].parent_pos, tree[i].pos,
+                                   tree[i].value + (value * -1),
+                                   tree[i].visits + 1)
+                else:  # node is a max node, keep value the same
                     tree[i] = Node(tree[i].node, tree[i].parent, tree[i].parent_pos, tree[i].pos, tree[i].value + value,
-                            tree[i].visits + 1)
-
-
+                                   tree[i].visits + 1)
 
                 parent = copy.deepcopy(tree[i])
                 # print("UPDATING NODE VALUES  " + printNodeValues(tree[i]))
@@ -503,9 +516,9 @@ def terminal_test(state):
             # print("DRAW FOUND: " + str(state))
             return True, 0, []
 
-    if winner == 'X':
+    if winner == initialise.minimaxTurn:
         return True, -1, []
-    elif winner == 'O':
+    elif winner == initialise.mctsTurn:
         return True, 1, []
 
     return False, 2, []

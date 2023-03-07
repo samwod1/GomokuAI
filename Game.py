@@ -1,10 +1,21 @@
 import sys
+import time
+
 import pygame
-import AI_Code
+import MCTS
+import Minimax
 import initialise
 from initialise import *
+import CSV_Writer
 
 pygame.init()
+
+maxGames = 30
+
+gamesPlayed = 0
+minimaxWins = 0
+mctsWins = 0
+draws = 0
 
 
 def get_board_size():
@@ -35,8 +46,6 @@ def redraw():
 def reset_board():
     global graphical_board, board, to_move, game_finished, move_first
 
-    # board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
-    #          list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
     board = []
     count = 0
 
@@ -55,7 +64,6 @@ def reset_board():
             graphical_board[i].append([None, None])
 
     to_move = 'X'
-    move_first = 'X'
 
     SCREEN.fill(BG_COLOR)
     pygame.display.flip()
@@ -80,13 +88,12 @@ def render_board(board, X_IMG, O_IMG):
 
 
 def add_XO(board, graphical_board, to_move):
-    if to_move == humanTurn and not game_finished:
-        action = humanAction()
-        if action is not None:
-            board, to_move = addPiece(action, board, graphical_board) #TODO fix the double click bug
+    if to_move == minimaxTurn and not game_finished:
+        action = minimaxAction()
+        board, to_move = addPiece(action, board, graphical_board)
 
-    elif to_move == computerTurn and not game_finished:
-        action = computerAction(board)
+    elif to_move == mctsTurn and not game_finished:
+        action = mctsAction(board)
         board, to_move = addPiece(action, board, graphical_board)
 
     return board, to_move
@@ -98,23 +105,24 @@ def humanAction():
     converted_y = round((current_pos[1] - 97.5) // distanceBtwRows)
 
     if (board_size - 1) >= converted_y >= 0 and (board_size - 1) >= converted_x >= 0:
-        action = [[converted_x, converted_y], humanTurn]
+        action = [[converted_x, converted_y], minimaxTurn]
     else:
         action = None  # incase the human clicks somewhere not allowed
 
     return action
 
 
-def computerAction(board):
+def minimaxAction():
+    action = Minimax.add_XO_AI(board, to_move)
+    return action
 
-    action = AI_Code.add_XO_AI(board, to_move)
-    #print("action: " + str(action))
+
+def mctsAction(board):
+    action = MCTS.add_XO_AI(board, to_move)
     return action
 
 
 def addPiece(action, board, graphical_board):
-    # action = [[12,3],"X"] e.g [[x,y], to_move]
-    #print("actoin:: " + str(action))
     x = action[0][0]
     y = action[0][1]
     turn = action[1]
@@ -134,10 +142,11 @@ def addPiece(action, board, graphical_board):
                 if graphical_board[i][j][0] is not None:
                     SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
 
-        return board, to_move
+    return board, to_move
 
 
-def check_win_2(current_board):
+def check_win(current_board):
+    global minimaxWins, mctsWins, draws
     dim = board_size
     dum = dim - (winCondition - 1)
     win_found = False
@@ -216,6 +225,7 @@ def check_win_2(current_board):
             for j in range(dim):
                 if current_board[i][j] != 'X' and current_board[i][j] != 'O':
                     return None
+        draws += 1
         return "DRAW"
 
     if winner == 'X':
@@ -259,50 +269,58 @@ def check_win_2(current_board):
 
         pygame.display.update()
 
+    if winner == minimaxTurn:
+        minimaxWins += 1
+    elif winner == mctsTurn:
+        mctsWins += 1
+
     return winner
+
+def reset_stats():
+    global gamesPlayed, minimaxWins, mctsWins, draws
+
+    gamesPlayed = 0
+    minimaxWins = 0
+    mctsWins = 0
+    draws = 0
 
 
 def game_loop():
-    global board, board_size, graphical_board, to_move, game_finished, move_first
-    while True:
-        for event in pygame.event.get():
+    global board, board_size, graphical_board, to_move, game_finished, move_first, gamesPlayed, maxGames
+    while MCTS.getTotalIterations() <= 1000:
+        while gamesPlayed < maxGames:
+            for event in pygame.event.get():
+                pygame.display.update()
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            board, to_move = add_XO(board, graphical_board, to_move)
+
+            if game_finished:
+                reset_board()
+
+            if check_win(board) is not None:
+                gamesPlayed += 1
+                game_finished = True
+
             pygame.display.update()
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
 
-            if move_first == computerTurn and to_move == computerTurn:
-                move_first = None
-                board, to_move = add_XO(board, graphical_board, to_move)
+        # CSV_Writer.appendC(MCTS.getC())
+        # CSV_Writer.appendLosses(minimaxWins)
 
-                if game_finished:
-                    reset_board()
+        CSV_Writer.appendIterations(MCTS.getTotalIterations())
+        CSV_Writer.appendLosses(minimaxWins)
 
-                if check_win_2(board) is not None:
-                    game_finished = True
+        print("Losses: " + str(minimaxWins))
+        print("C: " + str(MCTS.getC()))
 
-                pygame.display.update()
+        #MCTS.incrementC(0.1)
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+        MCTS.incrementTotalIterations(100)
+        reset_stats()
 
-                board, to_move = add_XO(board, graphical_board, to_move)
-
-                if game_finished:
-                    reset_board()
-
-                if check_win_2(board) is not None:
-                    game_finished = True
-
-                pygame.display.update()
-
-                if game_finished == False and to_move == computerTurn:
-
-                    board, to_move = add_XO(board, graphical_board, to_move)
-
-                    if game_finished:
-                        reset_board()
-
-                    if check_win_2(board) is not None:
-                        game_finished = True
-
-                pygame.display.update()
+    #Write to CSV
+    #CSV_Writer.CSV_C_Losses()
+    CSV_Writer.CSV_Iterations_Losses()
+    print("GAMES FINISHED \n Minimax Wins: " + str(minimaxWins) + " \n MCTS Wins: " + str(mctsWins) + " \n Draws: " + str(draws))
