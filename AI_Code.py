@@ -81,7 +81,7 @@ def MCTS(state):
     iterations = 0
     C = 1.41
 
-    while iterations <= 1000:
+    while iterations <= 3000:
         traverse_and_expand()
         # printPartialTree()
         # printTree()
