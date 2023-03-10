@@ -65,7 +65,7 @@ def MCTS(state):
     iterations = 0
     C = 1.41
     current = (state, '[]')
-    while iterations <= 1000:
+    while iterations <= 3000:
         traverse_and_expand(current)
         # printTree()
         iterations += 1
