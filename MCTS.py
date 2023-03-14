@@ -14,17 +14,17 @@ blackWins = 0
 whiteWins = 0
 draws = 0
 C = 0
-total_iterations = 0
-
+total_iterations = 2000
+timelimit = 10
 
 
 def add_XO_AI(board, to_move):
     cbord = copy.deepcopy(board)
     state = state_conversion(cbord, to_move)
-    print("AI operating on state: " + str(state))
+    # print("AI operating on state: " + str(state))
     state = MCTSPlayer(state)
     action = stateToAction(cbord, state)
-    print("returning action: " + str(action))
+    # print("returning action: " + str(action))
 
     if action is not None:
         return action
@@ -40,17 +40,16 @@ def state_conversion(board, to_move):
 
 
 def MCTSPlayer(state):
-    print("Starting MCTS\n")
+    # print("Starting MCTS\n")
     start = time.time()
     action = MCTS(state)
     end = time.time()
     duration = end - start
-    print("")
-    print("AI player moved to state: " + str(action))
-    print("In time: " + str(duration))
+    # print("")
+    # print("AI player moved to state: " + str(action))
+    # print("In time: " + str(duration))
 
     return action
-
 
 
 def MCTS(state):
@@ -63,23 +62,25 @@ def MCTS(state):
     tree["('[]', 'start')"] = ['start', 0, 0]
     tree[str((state, '[]'))] = [('[]', 'start'), 0, 0]
     iterations = 0
-    C = 1.41
     current = (state, '[]')
-    while iterations <= 3000:
+    start = time.time()
+    # while iterations <= total_iterations:
+    while time.time() < start + timelimit:
         traverse_and_expand(current)
         # printTree()
-        iterations += 1
+        # iterations += 1
 
     maxUCB = -math1.inf
 
     succ = successors(state)
+    oldC = C
     C = 0
     for s in succ:
         UCB = calcMaxUCB((s, current[0]))
-        if UCB > maxUCB:        # input("press enter")
-
+        if UCB > maxUCB:  # input("press enter")
             maxUCB = UCB
             UCBNode = copy.deepcopy(s)
+    C = oldC
 
     # print("Black Wins: " + str(blackWins))
     # print("White Wins: " + str(whiteWins))
@@ -88,9 +89,9 @@ def MCTS(state):
     return UCBNode
 
 
-def traverse_and_expand(node):
+def traverse_and_expand(state):
     global tree
-    current = copy.deepcopy(node)
+    current = copy.deepcopy(state)
     terminalBool = False
     while True:
         node = current[0]
@@ -100,14 +101,13 @@ def traverse_and_expand(node):
             terminalBool = True
             break  # stops if the current node is terminal
 
-        #print("Current  " + str(tree.get(str(current))))
+        # print("Current  " + str(tree.get(str(current))))
         if isLeaf(current):
             break
 
         maxUCB = -math1.inf
 
         succ = successors(node)
-
         for s in succ:
             UCB = calcMaxUCB((s, node))
             if UCB == math1.inf:
@@ -315,12 +315,12 @@ def successors(state):
     else:
         to_move_num = 1
 
-    current_board = state[0]
+    current_board = copy.deepcopy(state[0])
     res = []
 
     for i in range(board_size):
         for j in range(board_size):
-            next_state = copy.deepcopy(current_board)
+            next_state = current_board
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
                 next_state[i][j] = to_move
                 res.append([next_state, to_move_num])
@@ -335,6 +335,8 @@ def printTree():
     for k, v in zip(keys, values):
         print(k)
         print("      " + str(v))
+
+
 def stateToAction(init_state, bestState):
     x_pos = -1
     y_pos = -1
@@ -353,3 +355,21 @@ def stateToAction(init_state, bestState):
                 break
 
     return action
+
+
+def incrementTotalIterations(i):
+    global total_iterations
+    total_iterations += i
+
+
+def incrementC(c):
+    global C
+    C += c
+
+
+def getC():
+    return C
+
+
+def getTotalIterations():
+    return total_iterations

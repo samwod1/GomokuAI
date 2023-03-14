@@ -10,7 +10,7 @@ import CSV_Writer
 
 pygame.init()
 
-maxGames = 30
+maxGames = 100
 
 gamesPlayed = 0
 minimaxWins = 0
@@ -287,7 +287,7 @@ def reset_stats():
 
 def game_loop():
     global board, board_size, graphical_board, to_move, game_finished, move_first, gamesPlayed, maxGames
-    while MCTS.getTotalIterations() <= 1000:
+    while MCTS.getC() <= 1.6:
         while gamesPlayed < maxGames:
             for event in pygame.event.get():
                 pygame.display.update()
@@ -306,21 +306,26 @@ def game_loop():
 
             pygame.display.update()
 
-        # CSV_Writer.appendC(MCTS.getC())
-        # CSV_Writer.appendLosses(minimaxWins)
+            # print("Losses: " + str(minimaxWins))
+            # print("C: " + str(MCTS.getC()))
 
-        CSV_Writer.appendIterations(MCTS.getTotalIterations())
+            #time.sleep(2)
+
+        CSV_Writer.appendC(MCTS.getC())
         CSV_Writer.appendLosses(minimaxWins)
+
+        # CSV_Writer.appendIterations(MCTS.getTotalIterations())
+        # CSV_Writer.appendLosses(minimaxWins)
 
         print("Losses: " + str(minimaxWins))
         print("C: " + str(MCTS.getC()))
 
-        #MCTS.incrementC(0.1)
+        MCTS.incrementC(0.1)
 
-        MCTS.incrementTotalIterations(100)
+        # MCTS.incrementTotalIterations(100)
         reset_stats()
 
     #Write to CSV
-    #CSV_Writer.CSV_C_Losses()
-    CSV_Writer.CSV_Iterations_Losses()
+    CSV_Writer.CSV_C_Losses()
+    CSV_Writer.CSV_C_Losses() #writes to csv file
     print("GAMES FINISHED \n Minimax Wins: " + str(minimaxWins) + " \n MCTS Wins: " + str(mctsWins) + " \n Draws: " + str(draws))

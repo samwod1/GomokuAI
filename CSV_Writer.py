@@ -22,7 +22,7 @@ def appendLosses(L):
 # Creates CSV file with two columns, C and Losses
 def CSV_C_Losses():
     header = ['C', 'Losses']
-    with open(str(path) + 'CSV_C_Losses.csv', 'w', encoding='UTF8', newline='') as f:
+    with open(str(path) + 'CSV_C_Losses_improved.csv', 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
 
         writer.writerow(header)
