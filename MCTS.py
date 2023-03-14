@@ -5,9 +5,9 @@ import random
 import time
 import initialise
 import math as math1
+import numpy as np
 
 tree = {}
-og_state = copy.deepcopy(initialise.board)
 board_size = initialise.board_size
 winCondition = initialise.winCondition
 blackWins = 0
@@ -15,7 +15,7 @@ whiteWins = 0
 draws = 0
 C = 0
 total_iterations = 0
-time_limit = 5
+time_limit = 12
 
 
 def add_XO_AI(board, to_move):
@@ -74,7 +74,7 @@ def MCTS(state):
         if UCB > maxUCB:  # input("press enter")
 
             maxUCB = UCB
-            UCBNode = copy.deepcopy(s)
+            UCBNode = s
 
     # print("Black Wins: " + str(blackWins))
     # print("White Wins: " + str(whiteWins))
@@ -85,7 +85,8 @@ def MCTS(state):
 
 def traverse_and_expand(node):
     global tree
-    current = copy.deepcopy(node)
+    current = node[:]
+    #current = [[x for x in row] for row in node]
     terminalBool = False
     while True:
         node = current[0]
@@ -112,7 +113,7 @@ def traverse_and_expand(node):
                 maxUCB = UCB
                 UCBNode = s
 
-        current = (copy.deepcopy(UCBNode), node)
+        current = (UCBNode, node)
 
     if not terminalBool:  # checks if the traversal stopped because a terminal leaf
         if tree[str(current)][2] == 0:
@@ -142,7 +143,8 @@ def MCR_player(state):
 
 def backpropagate(node, rolloutValue):
     global tree
-    current = copy.deepcopy(node)
+    current = node[:]
+    #current = [row[:] for row in node]
     # print("backpropagating")
     while tree[str(current)][0] != "start":
         if current[0][1] == 0:
@@ -152,12 +154,13 @@ def backpropagate(node, rolloutValue):
             tree[str(current)] = [tree[str(current)][0], int(tree[str(current)][1]) + int(rolloutValue),
                                   int(tree[str(current)][2]) + 1]
 
-        current = copy.deepcopy(tree[str(current)][0])
+        current = tree[str(current)][0][:]
 
 
 def rollout(s):
     global draws, blackWins, whiteWins
-    state = copy.deepcopy(s)
+    #state = copy.deepcopy(s)
+    state = s[:]
     # print("ROLLOUT COMMENCING FROM: " + str(state))
     while True:
         terminal, utility, path = terminal_test(state)
@@ -175,8 +178,8 @@ def rollout(s):
         else:
             succ = successors(state)
             index = random.randint(0, len(succ) - 1)
-            state = copy.deepcopy(succ[index])
-
+            #state = copy.deepcopy(succ[index])
+            state = succ[index][:]
 
 def isLeaf(node):
     global tree
@@ -315,7 +318,7 @@ def successors(state):
 
     for i in range(board_size):
         for j in range(board_size):
-            next_state = copy.deepcopy(current_board)
+            next_state = [row[:] for row in current_board]
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
                 next_state[i][j] = to_move
                 res.append([next_state, to_move_num])

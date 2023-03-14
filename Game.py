@@ -1,6 +1,7 @@
 import sys
 import pygame
 import MCTSDictionary
+import MCTS
 import initialise
 from initialise import *
 
@@ -26,8 +27,6 @@ def grid(SCREEN, size, board_size, distanceBtwRows):
 
 
 def redraw():
-    global SCREEN, WIDTH, board_size, distanceBtwRows
-
     grid(SCREEN, BOARD_SIZE, board_size, distanceBtwRows)
     pygame.display.update()
 
@@ -107,7 +106,7 @@ def humanAction():
 
 def computerAction(board):
 
-    action = MCTSDictionary.add_XO_AI(board, to_move)
+    action = MCTS.add_XO_AI(board, to_move)
     #print("action: " + str(action))
     return action
 
