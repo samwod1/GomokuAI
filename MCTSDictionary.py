@@ -15,6 +15,7 @@ whiteWins = 0
 draws = 0
 C = 0
 total_iterations = 0
+time_limit = 5
 
 
 
@@ -41,13 +42,9 @@ def state_conversion(board, to_move):
 
 def MCTSPlayer(state):
     print("Starting MCTS\n")
-    start = time.time()
     action = MCTS(state)
-    end = time.time()
-    duration = end - start
     print("")
     print("AI player moved to state: " + str(action))
-    print("In time: " + str(duration))
 
     return action
 
@@ -63,12 +60,12 @@ def MCTS(state):
     tree["('[]', 'start')"] = ['start', 0, 0]
     tree[str((state, '[]'))] = [('[]', 'start'), 0, 0]
     iterations = 0
-    C = 1.41
+    C = math1.sqrt(2)
     current = (state, '[]')
-    while iterations <= 3000:
+    start = time.time()
+    while time.time() < start + time_limit:
         traverse_and_expand(current)
         # printTree()
-        iterations += 1
 
     maxUCB = -math1.inf
 

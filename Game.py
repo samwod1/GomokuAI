@@ -1,6 +1,6 @@
 import sys
 import pygame
-import AI_Code
+import MCTSDictionary
 import initialise
 from initialise import *
 
@@ -107,7 +107,7 @@ def humanAction():
 
 def computerAction(board):
 
-    action = AI_Code.add_XO_AI(board, to_move)
+    action = MCTSDictionary.add_XO_AI(board, to_move)
     #print("action: " + str(action))
     return action
 
@@ -134,7 +134,7 @@ def addPiece(action, board, graphical_board):
                 if graphical_board[i][j][0] is not None:
                     SCREEN.blit(graphical_board[i][j][0], graphical_board[i][j][1])
 
-        return board, to_move
+    return board, to_move
 
 
 def check_win_2(current_board):
