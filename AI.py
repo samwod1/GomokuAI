@@ -1,7 +1,7 @@
 # Functions used by all AI players
 import copy
 import random
-from Initialise import board_size, win_condition
+from Initialise import board_size, win_condition, humanTurn, computerTurn
 
 
 def result(state, action):
@@ -126,9 +126,9 @@ def terminal_test(state):
             # print("DRAW FOUND: " + str(state))
             return True, 0, []
 
-    if winner == 'X':
+    if winner == humanTurn:
         return True, -1, []
-    elif winner == 'O':
+    elif winner == computerTurn:
         return True, 1, []
 
     return False, 2, []

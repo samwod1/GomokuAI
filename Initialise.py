@@ -4,7 +4,7 @@ import pygame
 move_first = 'O'  # human 'X' and computer 'O'
 board_size = 3  # set between 0 - 15
 win_condition = 3  # how many stones you need in a row to win
-ai_type = 'SimpleMCTS'  # choose from 'MCTS', 'SimpleMCTS', 'MinimaxAlphaBeta', and 'MinimaxRollout'.
+ai_type = 'MinimaxAlphaBeta'  # choose from 'MCTS', 'SimpleMCTS', 'MinimaxAlphaBeta', and 'MinimaxRollout'.
 
 # Dont edit values below this :)
 

@@ -12,7 +12,7 @@ def MCTS(state):
     return bestNextState
 
 
-def MCR_player(state):
+def MCR(state):
     s = state[:]
     n = 700  # performs n many rollouts
     rolloutValue = 0
@@ -30,7 +30,7 @@ def expand(node):
     bestState = None
     maxValue = -m.inf
     for s in succ:
-        rolloutValue = MCR_player(s)
+        rolloutValue = MCR(s)
         if rolloutValue > maxValue:
             maxValue = rolloutValue
             bestState = s[:]
@@ -38,7 +38,7 @@ def expand(node):
     return bestState
 
 
-def AI_Player_mcts(state):
+def MCTSInit(state):
     start = timer.time()
     game_state = MCTS(state)
     end = timer.time()
@@ -49,11 +49,11 @@ def AI_Player_mcts(state):
     return game_state
 
 
-def add_XO_AI(current_board, to_move):
+def AIPlay(current_board, to_move):
     cbord = copy.deepcopy(current_board)
     state = state_conversion(cbord, to_move)
 
-    state = AI_Player_mcts(state)
+    state = MCTSInit(state)
 
     action = stateToAction(cbord, state)
     if action is not None:

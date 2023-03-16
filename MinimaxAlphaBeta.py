@@ -7,23 +7,17 @@ from AI import *
 
 
 def minValue(state, alpha, beta):
-    print("  ")
-    print("<<<<<<< MIN VALUE >>>>>>>")
-    print(" ")
     fin, utility, path = terminal_test(state)
 
     if fin:
-        print("returning utlity: " + str(utility) + " on state: " + str(state))
         return utility
 
     else:
 
         v = m.inf
         actions = getActions(state)
-        print("looping through actions on state: " + str(state))
         for a in actions:
             r = result(state, a)
-            print("got result: " + str(r) + " from action: " + str(a))
             v = min(v, maxValue(r, alpha, beta))
             if v <= alpha:
                 return v
@@ -32,28 +26,21 @@ def minValue(state, alpha, beta):
 
 
 def maxValue(state, alpha, beta):
-    print("  ")
-    print("<<<<<<< MAX VALUE >>>>>>>")
-    print(" ")
 
     fin, utility, path = terminal_test(state)
 
     if fin:
-        print("returning utlity: " + str(utility) + " on state: " + str(state))
         return utility
     else:
         v = -1 * m.inf
         actions = getActions(state)
-        print("looping through actions on state: " + str(state))
         for a in actions:
             r = result(state, a)
-            print("got result: " + str(r) + " from action: " + str(a))
             v = max(v, minValue(r, alpha, beta))
             if v >= beta:
                 return v
             alpha = max(alpha, v)
         return v
-    # rollout function
 
 
 def minimaxAlphaBeta(state):
@@ -75,7 +62,7 @@ def minimaxAlphaBeta(state):
     return bestAction
 
 
-def AI_Player_minimax(state):
+def MinimaxInit(state):
     start = timer.time()
     bestAction = minimaxAlphaBeta(state)
     end = timer.time()
@@ -95,10 +82,9 @@ def state_conversion(current_board, to_move):
     return state
 
 
-def add_XO_AI(current_board, to_move):
+def AIPlay(current_board, to_move):
     cbord = copy.deepcopy(current_board)
     state = state_conversion(cbord, to_move)
 
-    action = AI_Player_minimax(state)
-    print(getActions([[[1, 2, 'X'], [4, 'O', 6], ['O', 'X', 'O']], 'O']))
+    action = MinimaxInit(state)
     return action

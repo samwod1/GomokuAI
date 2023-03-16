@@ -8,18 +8,18 @@ from Initialise import *
 pygame.init()
 
 
-def drawGrid(SCREEN, size, board_size, distanceBtwRows):
+def drawGrid(screen, size, board_size, distanceBtwRows):
     x = 100
     y = 100
 
-    pygame.draw.line(SCREEN, (0, 0, 0), (x, 100), (x, size + 100))
-    pygame.draw.line(SCREEN, (0, 0, 0), (100, y), (size + 100, y))
+    pygame.draw.line(screen, (0, 0, 0), (x, 100), (x, size + 100))
+    pygame.draw.line(screen, (0, 0, 0), (100, y), (size + 100, y))
 
     for i in range(board_size):
         x += distanceBtwRows
         y += distanceBtwRows
-        pygame.draw.line(SCREEN, (0, 0, 0), (x, 100), (x, size + 100))
-        pygame.draw.line(SCREEN, (0, 0, 0), (100, y), (size + 100, y))
+        pygame.draw.line(screen, (0, 0, 0), (x, 100), (x, size + 100))
+        pygame.draw.line(screen, (0, 0, 0), (100, y), (size + 100, y))
 
 
 def redraw():
@@ -103,11 +103,11 @@ def computerAction(board):
     if ai_type == 'MCTS':
         action = MCTS.AI_play(board, to_move)
     elif ai_type == 'SimpleMCTS':
-        action = SimpleMCTS.add_XO_AI(board, to_move)
+        action = SimpleMCTS.AIPlay(board, to_move)
     elif ai_type == 'MinimaxAlphaBeta':
-        action = MinimaxAlphaBeta.add_XO_AI(board, to_move)
+        action = MinimaxAlphaBeta.AIPlay(board, to_move)
     elif ai_type == 'MinimaxRollout':
-        action = MinimaxRollout.add_XO_AI(board, to_move)
+        action = MinimaxRollout.AIPlay(board, to_move)
     else:
         print("Invalid 'ai_type' selected, Defaulting to MCTS")
         action = MCTS.AI_play(board, to_move)
