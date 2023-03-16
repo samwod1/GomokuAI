@@ -79,7 +79,7 @@ def add_XO(board, graphical_board, to_move):
     if to_move == humanTurn and not game_finished:
         action = humanAction()
         if action is not None:
-            board, to_move = addPiece(action, board, graphical_board) #TODO fix the double click bug
+            board, to_move = addPiece(action, board, graphical_board)
 
     elif to_move == computerTurn and not game_finished:
         action = computerAction(board)
@@ -101,9 +101,15 @@ def humanAction():
     return action
 
 
+def computerAction(board):
+    action = MCTS.add_XO_AI(board, to_move)
+    # print("action: " + str(action))
+    return action
+
+
 def addPiece(action, board, graphical_board):
     # action = [[12,3],"X"] e.g [[x,y], to_move]
-    #print("actoin:: " + str(action))
+    # print("actoin:: " + str(action))
     x = action[0][0]
     y = action[0][1]
     turn = action[1]

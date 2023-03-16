@@ -14,8 +14,8 @@ blackWins = 0
 whiteWins = 0
 draws = 0
 C = 0
-total_iterations = 0
-time_limit = 12
+total_iterations = 1000
+time_limit = 8
 
 
 def add_XO_AI(board, to_move):

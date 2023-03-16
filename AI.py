@@ -1,7 +1,7 @@
 # Functions used by all AI players
 import copy
 import random
-
+from Initialise import *
 
 def result(state, action):
     s = copy.deepcopy(state)
@@ -27,13 +27,6 @@ def rollout(s):
     while True:
         terminal, utility, path = terminal_test(state)
         if terminal:
-            if utility == 0:
-                draws += 1
-            elif utility == 1:
-                whiteWins += 1
-            elif utility == -1:
-                blackWins += 1
-
             return utility
         else:
             succ = successors(state)
