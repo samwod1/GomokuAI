@@ -39,7 +39,7 @@ def getActions(state):
 def rollout(s):
     state = s[:]
     while True:
-        terminal, utility, path = terminal_test(state)
+        terminal, utility, path = terminalTest(state)
         if terminal:
             return utility
         else:
@@ -47,8 +47,10 @@ def rollout(s):
             index = random.randint(0, len(succ) - 1)
             state = succ[index][:]
 
-
-def terminal_test(state):
+# returns a tuple of a boolean, value and empty state
+# boolean: is True if the state passed is terminal, false otherwise.
+# value: is 1 if it's a win, -1 for a loss and 0 if draw
+def terminalTest(state):
     current_board = state[0]
     dim = board_size
     dum = dim - (win_condition - 1)
@@ -131,7 +133,7 @@ def terminal_test(state):
     elif winner == computerTurn:
         return True, 1, []
 
-    return False, 2, []
+    return False, None, []
 
 
 def successors(state):
@@ -180,7 +182,7 @@ def stateToAction(init_state, bestState):
     return action
 
 
-def state_conversion(board, to_move):
+def stateConversion(board, to_move):
     if to_move == 'X':
         return [board, 1]
     else:

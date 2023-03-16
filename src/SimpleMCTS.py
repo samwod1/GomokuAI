@@ -3,7 +3,7 @@ import math as m
 import time as timer
 
 # File imports
-from AI import *
+from src.AI import *
 
 
 def MCTS(state):
@@ -51,7 +51,7 @@ def MCTSInit(state):
 
 def AIPlay(current_board, to_move):
     cbord = copy.deepcopy(current_board)
-    state = state_conversion(cbord, to_move)
+    state = stateConversion(cbord, to_move)
 
     state = MCTSInit(state)
 

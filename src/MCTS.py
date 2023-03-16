@@ -12,7 +12,7 @@ time_limit = 2
 
 def AI_play(board, to_move):
     cbord = copy.deepcopy(board)
-    state = state_conversion(cbord, to_move)
+    state = stateConversion(cbord, to_move)
     print("AI operating on state: " + str(state))
     state = MCTSInit(state)
     action = stateToAction(cbord, state)
@@ -66,7 +66,7 @@ def expand(node):
     terminalBool = False
     while True:
         node = current[0]
-        boolean, value, path = terminal_test(node)
+        boolean, value, path = terminalTest(node)
         if boolean:
             terminalBool = True
             break  # stops if the current node is terminal
@@ -102,7 +102,7 @@ def expand(node):
             value = MCR(firstChild)
             backpropagation((firstChild, node), value)
     else:
-        boolean, value, path = terminal_test(node)
+        boolean, value, path = terminalTest(node)
         backpropagation(current, value)
 
 

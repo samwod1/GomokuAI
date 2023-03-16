@@ -11,7 +11,7 @@ def MCR(state):
 
 
 def minValue(state, depth, alpha, beta):
-    fin, utility, path = terminal_test(state)
+    fin, utility, path = terminalTest(state)
 
     if depth >= maxDepth:
         return MCR(state)
@@ -37,7 +37,7 @@ def maxValue(state, depth, alpha, beta):
     if depth >= maxDepth:
         return MCR(state)
 
-    fin, utility, path = terminal_test(state)
+    fin, utility, path = terminalTest(state)
     if fin:
         return utility
     else:
@@ -85,7 +85,7 @@ def MinimaxInit(state):
 
 def AIPlay(current_board, to_move):
     cbord = copy.deepcopy(current_board)
-    state = state_conversion(cbord, to_move)
+    state = stateConversion(cbord, to_move)
 
     action = MinimaxInit(state)
     return action
