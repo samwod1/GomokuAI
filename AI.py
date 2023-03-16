@@ -1,7 +1,8 @@
 # Functions used by all AI players
 import copy
 import random
-from Initialise import *
+from Initialise import board_size, win_condition
+
 
 def result(state, action):
     s = copy.deepcopy(state)
@@ -21,8 +22,21 @@ def result(state, action):
     return s
 
 
+def getActions(state):
+    to_move = state[1]
+    actions = []
+
+    next_state = state[0]
+
+    for i in range(board_size):
+        for j in range(board_size):
+            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
+                actions.append([[j, i], to_move])  # [[x, y], to_move]
+
+    return actions
+
+
 def rollout(s):
-    global draws, blackWins, whiteWins
     state = s[:]
     while True:
         terminal, utility, path = terminal_test(state)
@@ -34,12 +48,10 @@ def rollout(s):
             state = succ[index][:]
 
 
-
 def terminal_test(state):
-    global board_size, winCondition
     current_board = state[0]
     dim = board_size
-    dum = dim - (winCondition - 1)
+    dum = dim - (win_condition - 1)
 
     win_found = False
     winner = None
@@ -48,7 +60,7 @@ def terminal_test(state):
 
         for i in range(dim):
             for j in range(dum):
-                winConditionCount = (winCondition - 1)
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i][j + winConditionCount]:
@@ -61,7 +73,7 @@ def terminal_test(state):
 
         for i in range(dum):
             for j in range(dim):
-                winConditionCount = (winCondition - 1)
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i + winConditionCount][j]:
@@ -72,9 +84,9 @@ def terminal_test(state):
                     winner = current_board[i][j]
                     win_found = True
 
-        for i in range((winCondition - 1), dim):
+        for i in range((win_condition - 1), dim):
             for j in range(dum):
-                winConditionCount = (winCondition - 1)
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i - winConditionCount][j + winConditionCount]:
@@ -86,9 +98,9 @@ def terminal_test(state):
                     winner = current_board[i][j]
                     win_found = True
 
-        for i in range((winCondition - 1), dim):
-            for j in range((winCondition - 1), dim):
-                winConditionCount = (winCondition - 1)
+        for i in range((win_condition - 1), dim):
+            for j in range((win_condition - 1), dim):
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i - winConditionCount][j - winConditionCount]:
@@ -173,4 +185,3 @@ def state_conversion(board, to_move):
         return [board, 1]
     else:
         return [board, 0]
-

@@ -1,32 +1,9 @@
 # Library imports
-import copy
-import math as math1
+import math as m
 import time as timer
 
 # File imports
-import Initialise
 from AI import *
-
-board_size = Initialise.board_size
-winCondition = Initialise.winCondition
-computerTurn = Initialise.computerTurn
-
-
-def getActions(state):
-    to_move = state[1]
-    actions = []
-
-    next_state = state[0]
-
-    for i in range(board_size):
-        for j in range(board_size):
-            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-                # next_state[i][j] = to_move
-                actions.append([[j, i], to_move])  # [[x, y], to_move]
-
-    # print("actions!!: " + str(actions))
-
-    return actions
 
 
 def minValue(state, alpha, beta):
@@ -41,7 +18,7 @@ def minValue(state, alpha, beta):
 
     else:
 
-        v = math1.inf
+        v = m.inf
         actions = getActions(state)
         print("looping through actions on state: " + str(state))
         for a in actions:
@@ -65,7 +42,7 @@ def maxValue(state, alpha, beta):
         print("returning utlity: " + str(utility) + " on state: " + str(state))
         return utility
     else:
-        v = -1 * math1.inf
+        v = -1 * m.inf
         actions = getActions(state)
         print("looping through actions on state: " + str(state))
         for a in actions:
@@ -79,13 +56,13 @@ def maxValue(state, alpha, beta):
     # rollout function
 
 
-def minimax(state):
-    alpha = -math1.inf
-    beta = math1.inf
+def minimaxAlphaBeta(state):
+    alpha = -m.inf
+    beta = m.inf
 
     actions = getActions(state)
 
-    bestActionUtility = -1 * math1.inf
+    bestActionUtility = -1 * m.inf
     bestAction = None
 
     for a in actions:
@@ -100,7 +77,7 @@ def minimax(state):
 
 def AI_Player_minimax(state):
     start = timer.time()
-    bestAction = minimax(state)
+    bestAction = minimaxAlphaBeta(state)
     end = timer.time()
     duration = end - start
     print("")

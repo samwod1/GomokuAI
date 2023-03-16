@@ -1,161 +1,9 @@
-import copy
-import math as math1
-import random
+import math as m
 import time as timer
 
-import Initialise
 from AI import *
 
-board_size = Initialise.board_size
-winCondition = Initialise.winCondition
-computerTurn = Initialise.computerTurn
 maxDepth = 2
-
-
-def result(state, action):
-    s = copy.deepcopy(state)
-    x = action[0][0]
-    y = action[0][1]
-    turn = copy.deepcopy(action[1])
-
-    s[0][y][x] = turn
-
-    if turn == 'X':
-        turn = 'O'
-    else:
-        turn = 'X'
-
-    s[1] = turn
-    return s
-
-
-def getActions(state):
-    to_move = state[1]
-    actions = []
-
-    next_state = state[0]
-
-    for i in range(board_size):
-        for j in range(board_size):
-            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-                actions.append([[j, i], to_move])  # [[x, y], to_move]
-
-    return actions
-
-
-def terminal_test(state):
-
-    global board_size, winCondition
-    current_board = (state[0])
-    dim = board_size
-    dum = dim - (winCondition - 1)
-
-    win_found = False
-    winner = None
-
-    while not win_found:
-
-        for i in range(dim):
-            for j in range(dum):
-                winConditionCount = (winCondition - 1)
-                sequenceBroken = False
-                while not sequenceBroken and winConditionCount >= 0:
-                    if current_board[i][j] == current_board[i][j + winConditionCount]:
-                        winConditionCount -= 1
-                    else:
-                        sequenceBroken = True
-                if not sequenceBroken:
-                    winner = current_board[i][j]
-                    win_found = True
-
-        for i in range(dum):
-            for j in range(dim):
-                winConditionCount = (winCondition - 1)
-                sequenceBroken = False
-                while not sequenceBroken and winConditionCount >= 0:
-                    if current_board[i][j] == current_board[i + winConditionCount][j]:
-                        winConditionCount -= 1
-                    else:
-                        sequenceBroken = True
-                if not sequenceBroken:
-                    winner = current_board[i][j]
-                    win_found = True
-
-        for i in range((winCondition - 1), dim):
-            for j in range(dum):
-                winConditionCount = (winCondition - 1)
-                sequenceBroken = False
-                while not sequenceBroken and winConditionCount >= 0:
-                    if current_board[i][j] == current_board[i - winConditionCount][j + winConditionCount]:
-                        winConditionCount -= 1
-                    else:
-                        sequenceBroken = True
-
-                if not sequenceBroken:
-                    winner = current_board[i][j]
-                    win_found = True
-
-        for i in range((winCondition - 1), dim):
-            for j in range((winCondition - 1), dim):
-                winConditionCount = (winCondition - 1)
-                sequenceBroken = False
-                while not sequenceBroken and winConditionCount >= 0:
-                    if current_board[i][j] == current_board[i - winConditionCount][j - winConditionCount]:
-                        winConditionCount -= 1
-                    else:
-                        sequenceBroken = True
-
-                if not sequenceBroken:
-                    winner = current_board[i][j]
-                    win_found = True
-
-        break
-
-    if not win_found:
-        draw_found = True
-        for i in range(dim):
-            for j in range(dim):
-                if current_board[i][j] != 'X' and current_board[i][j] != 'O':
-                    draw_found = False
-                    break
-
-        if draw_found:
-            return True, 0, []
-
-    if winner == 'O':
-        return True, 1, []
-    elif winner == 'X':
-        return True, -1, []
-
-    return False, 2, []
-
-
-def successors(state):
-    s = copy.deepcopy(state)
-    to_move = s[1]
-
-    if to_move == 1:
-        to_move = 'X'
-    else:
-        to_move = 'O'
-
-    if to_move == 'X':
-        to_move_num = 0
-    else:
-        to_move_num = 1
-
-    current_board = s[0]
-    res = []
-
-    for i in range(board_size):
-        for j in range(board_size):
-            next_state = copy.deepcopy(current_board)
-            if next_state[i][j] != 'X' and next_state[i][j] != 'O':
-                next_state[i][j] = to_move
-                res.append([next_state, to_move_num])
-    return res
-
-
 
 
 def MCR_player(state):
@@ -177,7 +25,7 @@ def minValue(state, depth, alpha, beta):
 
     else:
 
-        v = math1.inf
+        v = m.inf
         actions = getActions(state)
         print("looping through actions on state: " + str(state))
         for a in actions:
@@ -203,7 +51,7 @@ def maxValue(state, depth, alpha, beta):
         print("returning utlity: " + str(utility) + " on state: " + str(state))
         return utility
     else:
-        v = -math1.inf
+        v = -m.inf
         actions = getActions(state)
         print("looping through actions on state: " + str(state))
         for a in actions:
@@ -217,13 +65,13 @@ def maxValue(state, depth, alpha, beta):
         return v
 
 
-def minimax(state):
+def minimaxRollout(state):
     actions = getActions(state)
     depth = 0
-    alpha = -math1.inf
-    beta = math1.inf
+    alpha = -m.inf
+    beta = m.inf
 
-    bestActionUtility = -math1.inf
+    bestActionUtility = -m.inf
     bestAction = None
 
     for a in actions:
@@ -238,9 +86,9 @@ def minimax(state):
 
 def AI_Player_minimax(state):
     start = timer.time()
-    bestAction = minimax(state)
+    bestAction = minimaxRollout(state)
     end = timer.time()
-    duration = end-start
+    duration = end - start
     print("")
     print("AI player moved to state " + str(bestAction))
     print("Time taken: " + str(duration))

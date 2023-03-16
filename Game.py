@@ -1,15 +1,14 @@
 import sys
 import MCTS
+import MinimaxAlphaBeta
+import MinimaxRollout
+import SimpleMCTS
 from Initialise import *
 
 pygame.init()
 
 
-def get_board_size():
-    return board_size
-
-
-def grid(SCREEN, size, board_size, distanceBtwRows):
+def drawGrid(SCREEN, size, board_size, distanceBtwRows):
     x = 100
     y = 100
 
@@ -24,15 +23,13 @@ def grid(SCREEN, size, board_size, distanceBtwRows):
 
 
 def redraw():
-    grid(SCREEN, BOARD_SIZE, board_size, distanceBtwRows)
+    drawGrid(SCREEN, BOARD_SIZE, board_size, distanceBtwRows)
     pygame.display.update()
 
 
-def reset_board():
+def resetBoard():
     global graphical_board, board, to_move, game_finished, move_first
 
-    # board = [list(range(1, 10)), list(range(10, 19)), list(range(19, 28)), list(range(28, 37)), list(range(37, 46)),
-    #          list(range(46, 55)), list(range(55, 64)), list(range(64, 73)), list(range(73, 82))]
     board = []
     count = 0
 
@@ -63,7 +60,7 @@ def reset_board():
     pygame.display.update()
 
 
-def render_board(board, X_IMG, O_IMG):
+def renderBoard(board, X_IMG, O_IMG):
     global graphical_board
     for i in range(board_size):
         for j in range(board_size):
@@ -75,7 +72,7 @@ def render_board(board, X_IMG, O_IMG):
                 graphical_board[i][j][1] = O_IMG.get_rect(center=(j * distanceBtwRows + 121, i * distanceBtwRows + 121))
 
 
-def add_XO(board, graphical_board, to_move):
+def playTurn(board, graphical_board, to_move):
     if to_move == humanTurn and not game_finished:
         action = humanAction()
         if action is not None:
@@ -102,14 +99,23 @@ def humanAction():
 
 
 def computerAction(board):
-    action = MCTS.add_XO_AI(board, to_move)
-    # print("action: " + str(action))
+
+    if ai_type == 'MCTS':
+        action = MCTS.AI_play(board, to_move)
+    elif ai_type == 'SimpleMCTS':
+        action = SimpleMCTS.add_XO_AI(board, to_move)
+    elif ai_type == 'MinimaxAlphaBeta':
+        action = MinimaxAlphaBeta.add_XO_AI(board, to_move)
+    elif ai_type == 'MinimaxRollout':
+        action = MinimaxRollout.add_XO_AI(board, to_move)
+    else:
+        print("Invalid 'ai_type' selected, Defaulting to MCTS")
+        action = MCTS.AI_play(board, to_move)
+
     return action
 
 
 def addPiece(action, board, graphical_board):
-    # action = [[12,3],"X"] e.g [[x,y], to_move]
-    # print("actoin:: " + str(action))
     x = action[0][0]
     y = action[0][1]
     turn = action[1]
@@ -122,7 +128,7 @@ def addPiece(action, board, graphical_board):
         else:
             to_move = "X"
 
-        render_board(board, X_IMG, O_IMG)
+        renderBoard(board, X_IMG, O_IMG)
 
         for i in range(board_size):
             for j in range(board_size):
@@ -132,9 +138,9 @@ def addPiece(action, board, graphical_board):
     return board, to_move
 
 
-def check_win_2(current_board):
+def checkWin(current_board):
     dim = board_size
-    dum = dim - (winCondition - 1)
+    dum = dim - (win_condition - 1)
     win_found = False
     winner = None
     win_type = None
@@ -144,7 +150,7 @@ def check_win_2(current_board):
 
         for i in range(dim):
             for j in range(dum):
-                winConditionCount = (winCondition - 1)
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i][j + winConditionCount]:
@@ -159,7 +165,7 @@ def check_win_2(current_board):
 
         for i in range(dum):
             for j in range(dim):
-                winConditionCount = (winCondition - 1)
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i + winConditionCount][j]:
@@ -172,9 +178,9 @@ def check_win_2(current_board):
                     win_type = "vertical"
                     win_found = True
 
-        for i in range((winCondition - 1), dim):
+        for i in range((win_condition - 1), dim):
             for j in range(dum):
-                winConditionCount = (winCondition - 1)
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i - winConditionCount][j + winConditionCount]:
@@ -188,9 +194,9 @@ def check_win_2(current_board):
                     win_type = "diagonals"
                     win_found = True
 
-        for i in range((winCondition - 1), dim):
-            for j in range((winCondition - 1), dim):
-                winConditionCount = (winCondition - 1)
+        for i in range((win_condition - 1), dim):
+            for j in range((win_condition - 1), dim):
+                winConditionCount = (win_condition - 1)
                 sequenceBroken = False
                 while not sequenceBroken and winConditionCount >= 0:
                     if current_board[i][j] == current_board[i - winConditionCount][j - winConditionCount]:
@@ -213,41 +219,36 @@ def check_win_2(current_board):
                     return None
         return "DRAW"
 
-    if winner == 'X':
-        winner_IMG = X_WIN
-    else:
-        winner_IMG = O_WIN
-
     if winner is not None:
-        winConditionCount = winCondition - 1
+        winConditionCount = win_condition - 1
         i = win_position[0]
         j = win_position[1]
         if win_type == "horizontal":
             while winConditionCount >= 0:
-                graphical_board[i][j + winConditionCount][0] = winner_IMG
+                graphical_board[i][j + winConditionCount][0] = WINNER_IMG
                 SCREEN.blit(graphical_board[i][j + winConditionCount][0],
                             graphical_board[i][j + winConditionCount][1])  #
                 winConditionCount -= 1
 
-        winConditionCount = winCondition - 1
+        winConditionCount = win_condition - 1
         if win_type == "vertical":
             while winConditionCount >= 0:
-                graphical_board[i + winConditionCount][j][0] = winner_IMG
+                graphical_board[i + winConditionCount][j][0] = WINNER_IMG
                 SCREEN.blit(graphical_board[i + winConditionCount][j][0], graphical_board[i + winConditionCount][j][1])
                 winConditionCount -= 1
 
-        winConditionCount = winCondition - 1
+        winConditionCount = win_condition - 1
         if win_type == "diagonals":
             while winConditionCount >= 0:
-                graphical_board[i - winConditionCount][j + winConditionCount][0] = winner_IMG
+                graphical_board[i - winConditionCount][j + winConditionCount][0] = WINNER_IMG
                 SCREEN.blit(graphical_board[i - winConditionCount][j + winConditionCount][0],
                             graphical_board[i - winConditionCount][j + winConditionCount][1])
                 winConditionCount -= 1
 
-        winConditionCount = winCondition - 1
+        winConditionCount = win_condition - 1
         if win_type == "other diagonals":
             while winConditionCount >= 0:
-                graphical_board[i - winConditionCount][j - winConditionCount][0] = winner_IMG
+                graphical_board[i - winConditionCount][j - winConditionCount][0] = WINNER_IMG
                 SCREEN.blit(graphical_board[i - winConditionCount][j - winConditionCount][0],
                             graphical_board[i - winConditionCount][j - winConditionCount][1])
                 winConditionCount -= 1
@@ -257,7 +258,7 @@ def check_win_2(current_board):
     return winner
 
 
-def game_loop():
+def gameLoop():
     global board, board_size, graphical_board, to_move, game_finished, move_first
     while True:
         for event in pygame.event.get():
@@ -268,36 +269,36 @@ def game_loop():
 
             if move_first == computerTurn and to_move == computerTurn:
                 move_first = None
-                board, to_move = add_XO(board, graphical_board, to_move)
+                board, to_move = playTurn(board, graphical_board, to_move)
 
                 if game_finished:
-                    reset_board()
+                    resetBoard()
 
-                if check_win_2(board) is not None:
+                if checkWin(board) is not None:
                     game_finished = True
 
                 pygame.display.update()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
 
-                board, to_move = add_XO(board, graphical_board, to_move)
+                board, to_move = playTurn(board, graphical_board, to_move)
 
                 if game_finished:
-                    reset_board()
+                    resetBoard()
 
-                if check_win_2(board) is not None:
+                if checkWin(board) is not None:
                     game_finished = True
 
                 pygame.display.update()
 
-                if game_finished == False and to_move == computerTurn:
+                if game_finished is False and to_move == computerTurn:
 
-                    board, to_move = add_XO(board, graphical_board, to_move)
+                    board, to_move = playTurn(board, graphical_board, to_move)
 
                     if game_finished:
-                        reset_board()
+                        resetBoard()
 
-                    if check_win_2(board) is not None:
+                    if checkWin(board) is not None:
                         game_finished = True
 
                 pygame.display.update()
