@@ -53,7 +53,7 @@ def rollout(s):
 # value: is 1 if it's a win, -1 for a loss and 0 if draw
 def terminalTest(state):
     current_board = state[0]
-    dim = board_size
+    dim = len(state[0])
     dum = dim - (win_condition - 1)
 
     win_found = False
@@ -139,7 +139,7 @@ def terminalTest(state):
 
 def successors(state):
     to_move = state[1]
-
+    size = len(state[0])
     if to_move == 1:
         to_move = 'X'
     else:
@@ -153,8 +153,8 @@ def successors(state):
     current_board = state[0]
     res = []
 
-    for i in range(board_size):
-        for j in range(board_size):
+    for i in range(size):
+        for j in range(size):
             next_state = [row[:] for row in current_board]
             if next_state[i][j] != 'X' and next_state[i][j] != 'O':
                 next_state[i][j] = to_move
@@ -166,15 +166,16 @@ def successors(state):
 def stateToAction(init_state, bestState):
     x_pos = -1
     y_pos = -1
+    size = len(init_state[0])
     if bestState[1] == 1:
         turn = 'O'
     else:
         turn = 'X'
     action = None
 
-    for i in range(board_size):
+    for i in range(size):
         y_pos = y_pos + 1
-        for j in range(board_size):
+        for j in range(size):
             x_pos = x_pos + 1
             if init_state[i][j] != bestState[0][i][j]:
                 action = [[j, i], turn]
@@ -192,7 +193,7 @@ def stateConversion(board, to_move):
 
 def setTimeLimit():
     if board_size == 3:
-        return 2
+        return 3
     elif board_size == 4:
         return 4
     elif board_size == 5:

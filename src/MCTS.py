@@ -145,12 +145,11 @@ def checkLeaf(node):
     treeValues = tuple(tree.values())  # returns tuple of all the tree values
     for i in range(len(treeValues)):  # goes through all the tree values
         if treeValues[i][0] == node:  # if the parent of the node is the current then
-            leafBool = False and leafBool
-        else:
-            leafBool = True and leafBool
+            leafBool = False
+            break
     return leafBool
 
-
+# takes a node and gets the UCB1 value of it
 def calcMaxUCB(current):
     global tree
     node = tree.get(str(current))
@@ -164,12 +163,3 @@ def calcMaxUCB(current):
         UCB = (value / visits) + C * m.sqrt(m.log(parentNodeVisits) / visits)
 
     return UCB
-
-
-def printTree():
-    global tree
-    keys = tree.keys()
-    values = tree.values()
-    for k, v in zip(keys, values):
-        print(k)
-        print("      " + str(v))
