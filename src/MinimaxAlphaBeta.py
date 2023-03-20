@@ -3,7 +3,7 @@ import math as m
 import time as timer
 
 # File imports
-from AI import *
+from AI import terminalTest, getActions, result, copy, stateConversion, stateToAction
 
 
 def minValue(state, alpha, beta):
@@ -48,12 +48,13 @@ def minimaxAlphaBeta(state):
     beta = m.inf
 
     actions = getActions(state)
-
+    print(actions)
     bestActionUtility = -1 * m.inf
     bestAction = None
 
     for a in actions:
         r = result(state, a)
+        print(r)
         minimum = minValue(r, alpha, beta)
         if minimum > bestActionUtility:
             bestAction = a
@@ -70,7 +71,10 @@ def MinimaxInit(state):
     print("")
     print("AI player moved to state " + str(bestAction))
     print("Time taken: " + str(duration))
-    return bestAction
+    if state[1] == 0:
+        return [bestAction[0], 'O']
+    else:
+        return [bestAction[0], 'X']
 
 
 def state_conversion(current_board, to_move):

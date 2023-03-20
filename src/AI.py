@@ -10,12 +10,12 @@ def result(state, action):
     y = action[0][1]
     turn = copy.deepcopy(action[1])
 
-    s[0][y][x] = turn
-
     if turn == 'X':
         turn = 'O'
+        s[0][y][x] = 'X'
     else:
         turn = 'X'
+        s[0][y][x] = 'O'
 
     s[1] = turn
     # print("state: " + str(state))
@@ -46,6 +46,7 @@ def rollout(s):
             succ = successors(state)
             index = random.randint(0, len(succ) - 1)
             state = succ[index][:]
+
 
 # returns a tuple of a boolean, value and empty state
 # boolean: is True if the state passed is terminal, false otherwise.
@@ -187,3 +188,20 @@ def stateConversion(board, to_move):
         return [board, 1]
     else:
         return [board, 0]
+
+
+def setTimeLimit():
+    if board_size == 3:
+        return 2
+    elif board_size == 4:
+        return 4
+    elif board_size == 5:
+        return 7
+    elif board_size == 6:
+        return 9
+    elif board_size == 7:
+        return 10
+    elif board_size == 8:
+        return 13
+    else:
+        return 15

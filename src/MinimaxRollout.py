@@ -1,9 +1,9 @@
 import math as m
 import time as timer
 
-from AI import *
+from AI import terminalTest, getActions, result, copy, stateConversion, rollout
 
-maxDepth = 3
+maxDepth = 10
 
 
 def MCR(state):
@@ -80,7 +80,10 @@ def MinimaxInit(state):
     print("")
     print("AI player moved to state " + str(bestAction))
     print("Time taken: " + str(duration))
-    return bestAction
+    if state[1] == 0:
+        return [bestAction[0], 'O']
+    else:
+        return [bestAction[0], 'X']
 
 
 def AIPlay(current_board, to_move):
