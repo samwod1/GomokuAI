@@ -117,7 +117,6 @@ def expand(node):
         boolean, value, path = terminalTest(node)
         backpropagation(current, value)
 
-
 # returns the rollout from the state
 def MCR(state):
     return rollout(state)
@@ -160,6 +159,6 @@ def calcMaxUCB(current):
     if visits == 0:
         UCB = m.inf
     else:
-        UCB = (value / visits) + C * m.sqrt(m.log(parentNodeVisits) / visits)
+        UCB = (value / visits) + C * m.sqrt(m.log(parentNodeVisits) / visits)  # the UCB1 formula
 
     return UCB

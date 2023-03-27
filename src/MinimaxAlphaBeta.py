@@ -6,19 +6,19 @@ import time as timer
 from AI import terminalTest, getActions, result, copy, stateConversion, stateToAction
 
 
+# takes the state, alpha and beta values
+# returns a value
 def minValue(state, alpha, beta):
     fin, utility, path = terminalTest(state)
 
-    if fin:
+    if fin:  # if terminal returns the utility of the terminal test
         return utility
-
     else:
-
         v = m.inf
         actions = getActions(state)
         for a in actions:
             r = result(state, a)
-            v = min(v, maxValue(r, alpha, beta))
+            v = min(v, maxValue(r, alpha, beta))  # gets the minimum of maxValue on all resultant states
             if v <= alpha:
                 return v
             beta = min(beta, v)
@@ -75,15 +75,6 @@ def MinimaxInit(state):
         return [bestAction[0], 'O']
     else:
         return [bestAction[0], 'X']
-
-
-def state_conversion(current_board, to_move):
-    if to_move == "X":
-        state = [current_board, 'X']
-    else:
-        state = [current_board, 'O']
-
-    return state
 
 
 def AIPlay(current_board, to_move):

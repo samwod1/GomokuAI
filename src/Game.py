@@ -22,11 +22,13 @@ def drawGrid(screen, size, board_size, distanceBtwRows):
         pygame.draw.line(screen, (0, 0, 0), (100, y), (size + 100, y))
 
 
+# redraws the grid shown on screen and updates the display
 def redraw():
     drawGrid(SCREEN, BOARD_SIZE, board_size, distanceBtwRows)
     pygame.display.update()
 
 
+# resets all relevant game values to restart the game
 def resetBoard():
     global graphical_board, board, to_move, game_finished, move_first
 
@@ -48,7 +50,6 @@ def resetBoard():
             graphical_board[i].append([None, None])
 
     to_move = 'X'
-    move_first = 'X'
 
     SCREEN.fill(BG_COLOR)
     pygame.display.flip()
@@ -76,11 +77,11 @@ def playTurn(board, graphical_board, to_move):
     if to_move == humanTurn and not game_finished:
         action = humanAction()
         if action is not None:
-            board, to_move = addPiece(action, board, graphical_board)
+            board, to_move = renderPiece(action, board, graphical_board)
 
     elif to_move == computerTurn and not game_finished:
         action = computerAction(board)
-        board, to_move = addPiece(action, board, graphical_board)
+        board, to_move = renderPiece(action, board, graphical_board)
 
     return board, to_move
 
@@ -115,7 +116,7 @@ def computerAction(board):
     return action
 
 
-def addPiece(action, board, graphical_board):
+def renderPiece(action, board, graphical_board):
     x = action[0][0]
     y = action[0][1]
     turn = action[1]
@@ -138,9 +139,10 @@ def addPiece(action, board, graphical_board):
     return board, to_move
 
 
+# goes through board array and checks if the game is finished
 def checkWin(current_board):
     dim = board_size
-    dum = dim - (win_condition - 1)
+    dum = dim - (win_condition - 1)  # index for the number of tiles to check for a win
     win_found = False
     winner = None
     win_type = None
@@ -257,6 +259,7 @@ def checkWin(current_board):
 
     return winner
 
+# game loop for a human playing an AI, much simpler method if its just two computers playing each other
 
 def gameLoop():
     global board, board_size, graphical_board, to_move, game_finished, move_first
@@ -279,7 +282,7 @@ def gameLoop():
 
                 pygame.display.update()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:  # gets the events from the event queue, checks if its mouse down
 
                 board, to_move = playTurn(board, graphical_board, to_move)
 
