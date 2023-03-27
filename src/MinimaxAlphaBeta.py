@@ -3,7 +3,7 @@ import math as m
 import time as timer
 
 # File imports
-from AI import terminalTest, getActions, result, copy, stateConversion, stateToAction
+from AI import terminalTest, getActions, result, copy, stateConversion
 
 
 # takes the state, alpha and beta values
