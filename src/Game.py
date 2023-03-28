@@ -67,10 +67,10 @@ def renderBoard(board, X_IMG, O_IMG):
         for j in range(board_size):
             if board[i][j] == 'X':
                 graphical_board[i][j][0] = X_IMG
-                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * distanceBtwRows + 121, i * distanceBtwRows + 121))
+                graphical_board[i][j][1] = X_IMG.get_rect(center=(j * distanceBtwRows + 115, i * distanceBtwRows + 115))
             elif board[i][j] == 'O':
                 graphical_board[i][j][0] = O_IMG
-                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * distanceBtwRows + 121, i * distanceBtwRows + 121))
+                graphical_board[i][j][1] = O_IMG.get_rect(center=(j * distanceBtwRows + 115, i * distanceBtwRows + 115))
 
 
 def playTurn(board, graphical_board, to_move):
