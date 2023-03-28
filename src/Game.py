@@ -261,6 +261,7 @@ def checkWin(current_board):
 
 # game loop for a human playing an AI, much simpler method if its just two computers playing each other
 
+
 def gameLoop():
     global board, board_size, graphical_board, to_move, game_finished, move_first
     while True:

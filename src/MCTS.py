@@ -20,7 +20,7 @@ def AI_play(action, to_move):
     action = stateToAction(action, state)  # uses the state and returns the board with the action applied
     print("returning action: " + str(action))
 
-    if action is not None:  # checks if action is not Non and returns it if not returns empty board
+    if action is not None:  # checks if action is not None and returns it if not returns empty board
         return action
     else:
         return [[]]
@@ -117,6 +117,7 @@ def expand(node):
         boolean, value, path = terminalTest(node)
         backpropagation(current, value)
 
+
 # returns the rollout from the state
 def MCR(state):
     return rollout(state)
@@ -147,6 +148,7 @@ def checkLeaf(node):
             leafBool = False
             break
     return leafBool
+
 
 # takes a node and gets the UCB1 value of it
 def calcMaxUCB(current):
