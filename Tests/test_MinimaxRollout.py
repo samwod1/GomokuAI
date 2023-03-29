@@ -27,7 +27,7 @@ class MinimaxRollout(unittest.TestCase):
         alpha = -m.inf
         beta = m.inf
         depth = 0
-        value = minValue(state, alpha, beta, depth)
+        value = maxValue(state, alpha, beta, depth)
         self.assertEqual(value, -1, "incorrect output from minValue")
 
 
