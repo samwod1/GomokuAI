@@ -6,7 +6,7 @@ import time
 from AI import *
 
 tree = {}  # initialise tree as dictionary
-C = m.sqrt(2)  # initialise the search constant as the square root of 2
+C = m.sqrt(2)  # initialise the search constant as the square root of 2, though larger time limit will prefer a lower C
 time_limit = setTimeLimit()  # sets limit according to the board size
 
 
@@ -104,7 +104,7 @@ def expand(node):
     if not terminalBool:  # checks if the traversal stopped because a terminal leaf
         if tree[str(current)][2] == 0:  # if visits == 0
             value = MCR(node)  # rolls out from node
-            backpropagation(current, value) # backpropagates rollout value from current
+            backpropagation(current, value)  # backpropagates rollout value from current
         else:  # if not visited
             succ = successors(node)  # generates successors
             for s in succ:

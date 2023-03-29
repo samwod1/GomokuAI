@@ -3,7 +3,7 @@ import time as timer
 
 from AI import terminalTest, getActions, result, copy, stateConversion, rollout
 
-maxDepth = 10
+maxDepth = 5
 
 
 def MCR(state):

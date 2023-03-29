@@ -197,12 +197,15 @@ def setTimeLimit():
     elif board_size == 4:
         return 4
     elif board_size == 5:
-        return 7
+        return 5
     elif board_size == 6:
         return 9
     elif board_size == 7:
-        return 10
+        return 15
     elif board_size == 8:
         return 13
+    elif board_size == 10:
+        return 25
     else:
         return 5
+

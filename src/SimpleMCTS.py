@@ -14,7 +14,7 @@ def MCTS(state):
 
 def MCR(state):
     s = state[:]
-    n = 1000  # performs n many rollouts
+    n = 100  # performs n many rollouts
     rolloutValue = 0
 
     for i in range(n):

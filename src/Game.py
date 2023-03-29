@@ -49,7 +49,12 @@ def resetBoard():
         for j in range(board_size):
             graphical_board[i].append([None, None])
 
-    to_move = 'X'
+    if move_first == 'X':
+        to_move = 'X'
+    elif move_first == 'O':
+        to_move = 'O'
+    elif move_first is None:
+        to_move = 'O'
 
     SCREEN.fill(BG_COLOR)
     pygame.display.flip()
@@ -271,7 +276,7 @@ def gameLoop():
                 pygame.quit()
                 sys.exit()
 
-            if move_first == computerTurn and to_move == computerTurn:
+            if move_first == computerTurn:
                 move_first = None
                 board, to_move = playTurn(board, graphical_board, to_move)
 
