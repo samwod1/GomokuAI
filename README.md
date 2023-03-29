@@ -7,7 +7,7 @@ the Anaconda console, windows powershell or pycharm terminal. For more informati
 visit: https://www.pygame.org/news
 
 To run the program please run the 'Main.py' file which will start the game. If you wish to alter the parameters of the 
-game e.g board size, win condition and AI player. Please change the values between lines 4 - 7 of 'initialise.py'.
+game e.g board size, win condition and AI player. Please change the values between lines 5 - 8 of 'initialise.py'.
 
 Any questions please email sam.hunter.2019@uni.strath.ac.uk
 
